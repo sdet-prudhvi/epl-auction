@@ -1,0 +1,136 @@
+import http from "node:http";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { URL } from "node:url";
+import { applyAction, getState } from "./backend/store.js";
+
+const rootDir = process.cwd();
+const port = Number(process.env.PORT || 4173);
+const eventClients = new Set();
+
+const mimeTypes = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".svg": "image/svg+xml",
+};
+
+function sendJson(res, statusCode, payload) {
+  res.writeHead(statusCode, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+  });
+  res.end(`${JSON.stringify(payload)}\n`);
+}
+
+function sendEvent(res, eventName, payload) {
+  res.write(`event: ${eventName}\n`);
+  res.write(`data: ${JSON.stringify(payload)}\n\n`);
+}
+
+function broadcastState(state) {
+  for (const res of [...eventClients]) {
+    try {
+      sendEvent(res, "state", { state });
+    } catch {
+      eventClients.delete(res);
+    }
+  }
+}
+
+async function readBody(req) {
+  const chunks = [];
+  for await (const chunk of req) {
+    chunks.push(chunk);
+  }
+
+  if (chunks.length === 0) {
+    return {};
+  }
+
+  const text = Buffer.concat(chunks).toString("utf8");
+  return text ? JSON.parse(text) : {};
+}
+
+async function serveStatic(req, res, pathname) {
+  const relativePath = pathname === "/" ? "/index.html" : pathname;
+  const filePath = path.join(rootDir, relativePath);
+  const normalized = path.normalize(filePath);
+
+  if (!normalized.startsWith(rootDir)) {
+    sendJson(res, 403, { ok: false, message: "Forbidden." });
+    return;
+  }
+
+  try {
+    const file = await readFile(normalized);
+    const extension = path.extname(normalized);
+    res.writeHead(200, {
+      "Content-Type": mimeTypes[extension] || "application/octet-stream",
+      "Cache-Control": extension === ".html" ? "no-store" : "public, max-age=60",
+    });
+    res.end(file);
+  } catch {
+    sendJson(res, 404, { ok: false, message: "File not found." });
+  }
+}
+
+const server = http.createServer(async (req, res) => {
+  const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+  const { pathname } = requestUrl;
+
+  if (req.method === "GET" && pathname === "/api/state") {
+    const state = await getState();
+    sendJson(res, 200, { ok: true, state });
+    return;
+  }
+
+  if (req.method === "GET" && pathname === "/api/events") {
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-store",
+      Connection: "keep-alive",
+    });
+    res.write("\n");
+    eventClients.add(res);
+    sendEvent(res, "connected", { ok: true });
+    sendEvent(res, "state", { state: await getState() });
+
+    req.on("close", () => {
+      eventClients.delete(res);
+    });
+    return;
+  }
+
+  if (req.method === "POST" && pathname.startsWith("/api/actions/")) {
+    const action = pathname.replace("/api/actions/", "");
+
+    try {
+      const body = await readBody(req);
+      const { state, result } = await applyAction(action, body);
+      broadcastState(state);
+      sendJson(res, 200, {
+        ok: true,
+        message: result?.message ?? "Action applied.",
+        state,
+        data: result ?? null,
+      });
+    } catch (error) {
+      sendJson(res, 409, {
+        ok: false,
+        message: error instanceof Error ? error.message : "Action failed.",
+      });
+    }
+    return;
+  }
+
+  await serveStatic(req, res, pathname);
+});
+
+server.listen(port, "127.0.0.1", () => {
+  process.stdout.write(`EPL auction server running at http://127.0.0.1:${port}/\n`);
+});

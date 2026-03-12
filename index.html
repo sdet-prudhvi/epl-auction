@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EPL Season 1 Auction Arena</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="arena-glow arena-glow--left"></div>
+      <div class="arena-glow arena-glow--right"></div>
+      <div class="arena-grid" aria-hidden="true"></div>
+      <header class="topbar">
+        <div class="topbar__brand">
+          <p class="eyebrow">Equality Premier League</p>
+          <h1>Season 1 Auction Arena</h1>
+          <p class="topbar__subtitle">
+            Live auction floor for admin operations and public match-night viewing.
+          </p>
+        </div>
+        <div class="topbar__side">
+          <div class="topbar__meta">
+            <span class="topbar__tag">4 Teams</span>
+            <span class="topbar__tag">48 Players</span>
+            <span class="topbar__tag">12 Slots</span>
+            <span id="auction-badge" class="status-pill">Paused</span>
+          </div>
+          <div class="view-switch" role="tablist" aria-label="Auction views">
+            <button class="view-switch__button view-switch__button--active" data-view="admin" type="button">
+              Admin Console
+            </button>
+            <button class="view-switch__button" data-view="public" type="button">
+              Public Board
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div id="flash-banner" class="flash-banner flash-banner--hidden" aria-live="polite"></div>
+      <div id="celebration-layer" class="celebration-layer" aria-hidden="true"></div>
+
+      <section class="ticker-shell" aria-label="Auction ticker">
+        <div class="ticker-shell__label">
+          <span class="ticker-dot"></span>
+          Live Desk
+        </div>
+        <div class="ticker-window">
+          <div id="ticker-track" class="ticker-track"></div>
+        </div>
+      </section>
+
+      <section class="control-strip">
+        <div id="summary-cards" class="summary-grid"></div>
+        <div id="admin-actions" class="control-strip__actions">
+          <button id="toggle-live" class="button" type="button">Start Auction</button>
+          <button id="prev-slot" class="button button--ghost" type="button">Previous Slot</button>
+          <button id="next-slot" class="button button--ghost" type="button">Next Slot</button>
+        </div>
+      </section>
+
+      <main>
+        <section id="admin-view" class="view-panel view-panel--active">
+          <div class="layout">
+            <section class="panel panel--stack">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Operator Panel</p>
+                  <h2>Current Nomination</h2>
+                </div>
+              </div>
+              <div id="active-slot-card" class="auction-stage"></div>
+              <div class="action-row action-row--info">
+                <p class="inline-note">
+                  Players are revealed automatically in random order once the slot is opened and after each completed sale.
+                </p>
+              </div>
+
+              <div class="panel__header panel__header--compact">
+                <div>
+                  <p class="eyebrow">Bid Controls</p>
+                  <h2>Admin Entry Desk</h2>
+                </div>
+              </div>
+              <div class="bid-actions">
+                <button class="button bid-step" data-step="1000" type="button">+1,000</button>
+                <button class="button bid-step" data-step="2000" type="button">+2,000</button>
+                <button class="button bid-step" data-step="5000" type="button">+5,000</button>
+                <button id="sell-player" class="button" type="button">Mark Sold</button>
+                <button id="undo-sale" class="button button--ghost" type="button">Undo Last Sale</button>
+              </div>
+
+              <div class="panel__header panel__header--compact">
+                <div>
+                  <p class="eyebrow">Auction Order</p>
+                  <h2>Slot Timeline</h2>
+                </div>
+              </div>
+              <div id="slot-timeline" class="slot-timeline"></div>
+            </section>
+
+            <section class="panel panel--stack">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">League Teams</p>
+                  <h2>Budget & Recording Desk</h2>
+                </div>
+              </div>
+              <div id="teams-grid" class="teams-grid"></div>
+            </section>
+
+            <section class="panel panel--wide">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Player Pool</p>
+                  <h2>Eligible Players</h2>
+                </div>
+                <label class="filter">
+                  <span>Filter by slot</span>
+                  <select id="slot-filter"></select>
+                </label>
+              </div>
+              <div id="player-grid" class="player-grid"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Sale Ledger</p>
+                  <h2>Sold Players</h2>
+                </div>
+              </div>
+              <div id="sold-history" class="history-list"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Validation Feed</p>
+                  <h2>Activity & Prompts</h2>
+                </div>
+              </div>
+              <div id="activity-log" class="activity-log"></div>
+            </section>
+
+            <section class="panel panel--wide">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Squad Matrix</p>
+                  <h2>Per-Team Slots</h2>
+                </div>
+              </div>
+              <div id="admin-squad-board" class="squad-grid"></div>
+            </section>
+
+            <section class="panel panel--wide">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Master Ledger</p>
+                  <h2>All Players & Teams</h2>
+                </div>
+              </div>
+              <div class="roster-table-wrap">
+                <table class="roster-table">
+                  <thead>
+                    <tr>
+                      <th>Player</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Team</th>
+                      <th>Slot</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-roster-body"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel panel--wide">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Operations Rules</p>
+                  <h2>Roles & Visibility</h2>
+                </div>
+              </div>
+              <ul class="notes-list">
+                <li>Admin records every nomination, bid, sale, and undo action during the auction.</li>
+                <li>Scorer supports the auction table and Observer remains read-only for tracking.</li>
+                <li>Purse balances and sold history are visible to everyone.</li>
+                <li>Position 4 is the mandatory wicketkeeper slot in this build.</li>
+                <li>Four owner-players are pre-assigned as locked roster slots before live bidding begins.</li>
+                <li>Admin controls the auction order and can open any slot from the timeline at any time.</li>
+                <li>Only 44 live auction picks remain because each team starts at 1/12 filled.</li>
+              </ul>
+            </section>
+          </div>
+        </section>
+
+        <section id="public-view" class="view-panel">
+          <div class="layout">
+            <section class="panel panel--wide">
+              <div id="public-live-card" class="public-stage"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Public Purse Board</p>
+                  <h2>Franchise Wallets</h2>
+                </div>
+              </div>
+              <div id="public-teams-grid" class="teams-grid"></div>
+            </section>
+
+            <section class="panel">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Public Feed</p>
+                  <h2>Recent Sales</h2>
+                </div>
+              </div>
+              <div id="public-sold-history" class="history-list"></div>
+            </section>
+
+            <section class="panel panel--wide">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Squads</p>
+                  <h2>Team Sheets By Slot</h2>
+                </div>
+              </div>
+              <div id="public-squad-board" class="squad-grid"></div>
+            </section>
+
+            <section class="panel panel--wide">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Roster Board</p>
+                  <h2>All Players & Teams</h2>
+                </div>
+              </div>
+              <div class="roster-table-wrap">
+                <table class="roster-table">
+                  <thead>
+                    <tr>
+                      <th>Player</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Team</th>
+                      <th>Slot</th>
+                      <th>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody id="public-roster-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
