@@ -114,7 +114,9 @@ function nominateRandomPlayer(state, slotNumber, options = {}) {
     return null;
   }
 
-  const player = candidates[Math.floor(Math.random() * candidates.length)];
+  const player = candidates.reduce((next, p) =>
+    p.nominationOrder < next.nominationOrder ? p : next
+  );
   setNomination(state, player);
 
   if (options.logActivity) {
