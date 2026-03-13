@@ -151,6 +151,58 @@ Then open:
 
 [http://127.0.0.1:4173/](http://127.0.0.1:4173/)
 
+## Free Render Deployment
+
+This repo is now prepared for a quick free Render deployment.
+
+Files added for this:
+
+- [render.yaml](/Users/prudhvikunchangi/Playwrightautomation/EPL-AUCTION/render.yaml)
+- [server.js](/Users/prudhvikunchangi/Playwrightautomation/EPL-AUCTION/server.js) now supports `PORT`, `HOST`, and `/healthz`
+
+### What works on Render
+
+- dynamic Node server
+- public URL
+- SSE live updates
+- admin and public views
+
+### Free-tier limitation
+
+Render free web services are good for demo or staging use, but not true production for this project.
+
+Reason:
+
+- the app currently stores auction state in a local JSON file
+- free instances can sleep/restart
+- local filesystem state is not durable across those events
+
+So this is suitable for:
+
+- smoke testing
+- stakeholder demos
+- staging-style review
+
+It is not suitable for:
+
+- final live auction day operations
+- durable production data
+
+### Suggested Render steps
+
+1. Push this repo to GitHub.
+2. In Render, create a new `Web Service` from the repo.
+3. Keep:
+   - runtime: `Node`
+   - plan: `Free`
+   - start command: `npm start`
+4. Deploy.
+5. Open the generated `*.onrender.com` URL.
+
+Health check endpoint:
+
+- `/healthz`
+
 ## Available Runtime Behavior
 
 ### Admin view

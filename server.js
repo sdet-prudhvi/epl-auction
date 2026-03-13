@@ -6,6 +6,7 @@ import { applyAction, getState } from "./backend/store.js";
 
 const rootDir = process.cwd();
 const port = Number(process.env.PORT || 4173);
+const host = process.env.HOST || "0.0.0.0";
 const eventClients = new Set();
 
 const mimeTypes = {
@@ -83,6 +84,11 @@ const server = http.createServer(async (req, res) => {
   const requestUrl = new URL(req.url, `http://${req.headers.host}`);
   const { pathname } = requestUrl;
 
+  if (req.method === "GET" && pathname === "/healthz") {
+    sendJson(res, 200, { ok: true, status: "healthy" });
+    return;
+  }
+
   if (req.method === "GET" && pathname === "/api/state") {
     const state = await getState();
     sendJson(res, 200, { ok: true, state });
@@ -131,6 +137,6 @@ const server = http.createServer(async (req, res) => {
   await serveStatic(req, res, pathname);
 });
 
-server.listen(port, "127.0.0.1", () => {
-  process.stdout.write(`EPL auction server running at http://127.0.0.1:${port}/\n`);
+server.listen(port, host, () => {
+  process.stdout.write(`EPL auction server running at http://${host}:${port}/\n`);
 });
