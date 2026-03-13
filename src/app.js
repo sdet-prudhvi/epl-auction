@@ -281,6 +281,17 @@ function triggerSoldMoment(player, team, amount) {
   }, 1200);
 }
 
+function triggerUnsoldStamp() {
+  if (!activeSlotCard) return;
+  const existing = activeSlotCard.querySelector(".unsold-stamp");
+  if (existing) existing.remove();
+  const stamp = document.createElement("div");
+  stamp.className = "unsold-stamp";
+  stamp.textContent = "UNSOLD";
+  activeSlotCard.appendChild(stamp);
+  setTimeout(() => stamp.remove(), 960);
+}
+
 function maybeCelebrate(nextSnapshot) {
   const nextEvent = nextSnapshot?.auctionState?.lastEvent;
   if (!nextEvent || nextEvent.key === uiState.lastEventKey) {
@@ -288,6 +299,11 @@ function maybeCelebrate(nextSnapshot) {
   }
 
   uiState.lastEventKey = nextEvent.key;
+
+  if (nextEvent.type === "unsold") {
+    triggerUnsoldStamp();
+    return;
+  }
 
   if (nextEvent.type !== "sale" || !nextEvent.purchaseId) {
     return;
@@ -519,7 +535,7 @@ function renderSummaryCards() {
 
 function getTickerItems() {
   if (!snapshot) {
-    return ["Connecting to the EPL auction desk..."];
+    return [{ html: "Connecting to the EPL auction desk..." }];
   }
 
   const activeSlot = getActiveSlot();
@@ -528,19 +544,27 @@ function getTickerItems() {
     .map((sale) => {
       const player = snapshot.players.find((entry) => entry.id === sale.playerId);
       const team = snapshot.teams.find((entry) => entry.id === sale.teamId);
-      const purseLeft = team ? `${team.name} purse remaining: ${formatPoints(team.purseRemaining)}` : null;
-      return [
-        `${player?.name ?? "Player"} sold to ${team?.name ?? "team"} for ${formatPoints(sale.amount)}`,
-        purseLeft,
-      ].filter(Boolean);
+      const teamIndex = team ? snapshot.teams.findIndex((t) => t.id === team.id) + 1 : 0;
+      const saleItem = {
+        html: `${player?.name ?? "Player"} sold to ${team?.name ?? "team"} for <strong class="ticker-amount">${formatPoints(sale.amount)}</strong>`,
+        teamIndex,
+      };
+      const purseItem = team
+        ? {
+            html: `<span style="color:rgba(255,255,255,0.42);margin-right:4px">|</span> ${team.name} purse: <strong class="ticker-amount">${formatPoints(team.purseRemaining)}</strong> remaining`,
+            teamIndex,
+            purse: true,
+          }
+        : null;
+      return [saleItem, purseItem].filter(Boolean);
     })
     .flat();
 
-  const activityItems = snapshot.activityLog.slice(0, 4).map((item) => item.message);
+  const activityItems = snapshot.activityLog.slice(0, 4).map((item) => ({ html: item.message }));
   const baseItems = [
-    `${snapshot.league.name} ${snapshot.league.seasonName} is ${snapshot.auctionState.isLive ? "live" : "paused"}`,
-    `${activeSlot?.label ?? "Position"} on desk: ${activeSlot?.role ?? "Loading"}`,
-    `Base price ${formatPoints(snapshot.settings.basePrice)} · Purse visible to everyone`,
+    { html: `${snapshot.league.name} ${snapshot.league.seasonName} is ${snapshot.auctionState.isLive ? "live" : "paused"}` },
+    { html: `${activeSlot?.label ?? "Position"} on desk: ${activeSlot?.role ?? "Loading"}` },
+    { html: `Base price <strong class="ticker-amount">${formatPoints(snapshot.settings.basePrice)}</strong> · Purse visible to everyone` },
   ];
 
   return baseItems.concat(latestSales, activityItems).filter(Boolean).slice(0, 10);
@@ -556,9 +580,9 @@ function renderTicker() {
   tickerTrack.innerHTML = repeated
     .map(
       (item) => `
-        <span class="ticker-item">
-          <span class="ticker-item__spark"></span>
-          ${item}
+        <span class="ticker-item${item.purse ? " ticker-item--purse" : ""}">
+          <span class="ticker-item__spark${item.teamIndex ? ` ticker-item__spark--tc-${item.teamIndex}` : ""}"></span>
+          ${item.html}
         </span>
       `
     )
@@ -863,11 +887,11 @@ function renderTeamCards(container, interactive) {
           <dl class="metric-list">
             <div>
               <dt>Purse</dt>
-              <dd>${formatPoints(team.purseRemaining)} / ${formatPoints(team.purseTotal)}</dd>
+              <dd><span class="purse-val">${formatPoints(team.purseRemaining)}</span> / ${formatPoints(team.purseTotal)}</dd>
             </div>
             <div class="metric-list__bar-row">
               <dt>Spent</dt>
-              <dd>${formatPoints(spentAmount)}</dd>
+              <dd><span class="money-gold">${formatPoints(spentAmount)}</span></dd>
             </div>
             <div class="team-card__purse-bar" aria-hidden="true">
               <div class="team-card__purse-spent" style="width:${spentPercent}%;"></div>
@@ -879,7 +903,7 @@ function renderTeamCards(container, interactive) {
             ${interactive ? `
             <div>
               <dt>Max Bid</dt>
-              <dd style="color:${maxBid <= snapshot.settings.basePrice ? "var(--signal)" : "inherit"}">${formatPoints(maxBid)}</dd>
+              <dd style="color:${maxBid <= snapshot.settings.basePrice ? "var(--signal)" : "var(--gold)"}">${formatPoints(maxBid)}</dd>
             </div>
             <div>
               <dt>Reserved Floor</dt>
@@ -914,11 +938,15 @@ function renderTeamCards(container, interactive) {
   }
 
   container.querySelectorAll(".team-bid").forEach((button) => {
-    button.addEventListener("click", () => {
-      performAction("bid", {
+    button.addEventListener("click", async () => {
+      const ok = await performAction("bid", {
         teamId: button.dataset.teamId,
         increment: Number(button.dataset.step),
       });
+      if (!ok) {
+        button.classList.add("button--shake");
+        setTimeout(() => button.classList.remove("button--shake"), 420);
+      }
     });
   });
 }
@@ -1005,7 +1033,7 @@ function renderSoldHistory(container) {
             <strong>${player?.name ?? "-"}</strong>
             <p>${team?.name ?? "-"} · Position ${sale.slotNumber}</p>
           </div>
-          <span>${formatPoints(sale.amount)}</span>
+          <span class="money-gold">${formatPoints(sale.amount)}</span>
         </article>
       `;
     })
@@ -1060,9 +1088,9 @@ function renderRosterTable(body) {
     .map((player) => {
       const team = snapshot.teams.find((entry) => entry.id === player.soldToTeamId);
       const amountLabel = player.status === "Locked"
-        ? "Offline Fixed"
+        ? `<span class="money-gold">Offline Fixed</span>`
         : player.soldAmount
-          ? formatPoints(player.soldAmount)
+          ? `<span class="money-gold">${formatPoints(player.soldAmount)}</span>`
           : "-";
       return `
         <tr>
@@ -1164,6 +1192,7 @@ function showLoginOverlay() {
 
 function render() {
   document.body.classList.toggle("body-live", Boolean(snapshot?.auctionState?.isLive));
+  document.body.classList.toggle("sse-disconnected", snapshot !== null && !uiState.connected);
   renderViewState();
   renderFlashBanner();
 
@@ -1278,16 +1307,22 @@ document.querySelector("#reset-auction").addEventListener("click", async () => {
 });
 
 bidStepButtons.forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", async () => {
     if (!snapshot?.auctionState.leadingTeamId) {
       showNotice("warning", "Use a team record button first, then apply quick raises.");
+      button.classList.add("button--shake");
+      setTimeout(() => button.classList.remove("button--shake"), 420);
       return;
     }
 
-    performAction("bid", {
+    const ok = await performAction("bid", {
       teamId: snapshot.auctionState.leadingTeamId,
       increment: Number(button.dataset.step),
     });
+    if (!ok) {
+      button.classList.add("button--shake");
+      setTimeout(() => button.classList.remove("button--shake"), 420);
+    }
   });
 });
 

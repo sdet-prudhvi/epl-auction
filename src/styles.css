@@ -119,6 +119,10 @@ select {
   max-width: 620px;
 }
 
+.sse-disconnected .topbar {
+  animation: topbar-disconnect 1400ms ease infinite;
+}
+
 .topbar__crest-panel {
   position: relative;
   z-index: 1;
@@ -368,6 +372,22 @@ select {
   border-radius: 50%;
   background: linear-gradient(135deg, var(--gold), var(--accent));
   box-shadow: 0 0 12px rgba(255, 106, 0, 0.45);
+  flex-shrink: 0;
+}
+
+.ticker-item__spark--tc-1 { background: linear-gradient(135deg, #3a8fff, #8dc0ff); box-shadow: 0 0 12px rgba(58, 143, 255, 0.55); }
+.ticker-item__spark--tc-2 { background: linear-gradient(135deg, #f7bf4f, #ffe6a1); box-shadow: 0 0 12px rgba(247, 191, 79, 0.55); }
+.ticker-item__spark--tc-3 { background: linear-gradient(135deg, #ff7a1d, #ffab3d); box-shadow: 0 0 12px rgba(255, 122, 29, 0.55); }
+.ticker-item__spark--tc-4 { background: linear-gradient(135deg, #c91d24, #ff5959); box-shadow: 0 0 12px rgba(201, 29, 36, 0.55); }
+
+.ticker-amount {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.ticker-item--purse {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.9rem;
 }
 
 .flash-banner {
@@ -574,6 +594,11 @@ select {
   text-transform: uppercase;
 }
 
+.stage-card h4 {
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
 .eyebrow {
   margin: 0;
   font-size: 0.75rem;
@@ -599,6 +624,24 @@ select {
   cursor: pointer;
   transition: transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease;
   box-shadow: 0 12px 24px rgba(209, 54, 0, 0.24);
+  position: relative;
+  overflow: hidden;
+}
+
+.button::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.26) 0%, transparent 68%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 600ms ease;
+}
+
+.button:active::after {
+  opacity: 1;
+  transition: opacity 0ms;
 }
 
 .button:hover {
@@ -610,6 +653,10 @@ select {
   opacity: 0.38;
   cursor: not-allowed;
   transform: none;
+}
+
+.button--shake {
+  animation: button-shake 380ms ease !important;
 }
 
 .button--ghost {
@@ -669,7 +716,7 @@ select {
 
 .slot-chip span {
   color: var(--ink-soft);
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -697,6 +744,11 @@ select {
   box-shadow: inset 0 0 0 1px rgba(255, 106, 0, 0.12);
 }
 
+.slot-chip--active strong {
+  font-family: "Oswald", sans-serif;
+  letter-spacing: 0.03em;
+}
+
 .auction-stage {
   padding: 22px;
   border-radius: 22px;
@@ -704,6 +756,28 @@ select {
     radial-gradient(circle at top right, rgba(255, 106, 0, 0.12), transparent 32%),
     linear-gradient(180deg, var(--panel-strong), rgba(9, 16, 31, 0.96));
   border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.unsold-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: rgba(180, 180, 195, 0.92);
+  border: 3px solid rgba(180, 180, 195, 0.6);
+  padding: 6px 18px;
+  border-radius: 6px;
+  background: rgba(5, 11, 20, 0.5);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  animation: unsold-in 200ms ease both, unsold-out 280ms 640ms ease forwards;
 }
 
 .auction-stage__top {
@@ -796,8 +870,8 @@ select {
 .stage-card__bid-amount {
   font-size: clamp(2.4rem, 4.2vw, 3.6rem);
   line-height: 0.95;
-  color: #fff2c8;
-  text-shadow: 0 0 28px rgba(247, 191, 79, 0.18);
+  color: var(--gold);
+  text-shadow: 0 0 28px rgba(247, 191, 79, 0.28);
 }
 
 .stage-card__bid-track {
@@ -829,7 +903,7 @@ select {
 }
 
 .stage-card__bid-meta strong {
-  color: #ffe1a0;
+  color: var(--gold);
   font-size: 1rem;
   letter-spacing: 0.04em;
 }
@@ -1237,6 +1311,21 @@ select {
   color: var(--ink-soft);
 }
 
+.money-gold {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.purse-val {
+  display: block;
+  font-family: "Oswald", sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--gold);
+  letter-spacing: 0.02em;
+}
+
 .squad-grid {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
@@ -1383,8 +1472,11 @@ select {
 
 .public-stage__score strong {
   display: block;
+  font-family: "Oswald", sans-serif;
   font-size: 2.1rem;
-  text-shadow: 0 0 18px rgba(255, 106, 0, 0.2);
+  font-weight: 700;
+  color: var(--gold);
+  text-shadow: 0 0 18px rgba(247, 191, 79, 0.28);
 }
 
 .public-stage__score span {
@@ -2186,6 +2278,37 @@ select {
 
   to {
     background-position: -40% 0, 0 0;
+  }
+}
+
+@keyframes button-shake {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  14% { transform: translateX(-5px) translateY(0); }
+  28% { transform: translateX(5px) translateY(0); }
+  44% { transform: translateX(-4px) translateY(0); }
+  60% { transform: translateX(4px) translateY(0); }
+  76% { transform: translateX(-2px) translateY(0); }
+  90% { transform: translateX(2px) translateY(0); }
+}
+
+@keyframes unsold-in {
+  from { opacity: 0; transform: translate(-50%, -50%) rotate(-12deg) scale(1.5); }
+  to { opacity: 1; transform: translate(-50%, -50%) rotate(-12deg) scale(1); }
+}
+
+@keyframes unsold-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes topbar-disconnect {
+  0%, 100% {
+    border-color: rgba(255, 81, 48, 0.32);
+    box-shadow: var(--shadow);
+  }
+  50% {
+    border-color: rgba(255, 81, 48, 0.88);
+    box-shadow: var(--shadow), 0 0 0 2px rgba(255, 81, 48, 0.28), 0 0 28px rgba(255, 81, 48, 0.18);
   }
 }
 
