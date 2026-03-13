@@ -11,6 +11,7 @@ let snapshot = null;
 let noticeTimeoutId = null;
 let celebrationTimeoutId = null;
 let eventSource = null;
+let liveModeLastNominatedId = null;
 
 const summaryCards = document.querySelector("#summary-cards");
 const slotTimeline = document.querySelector("#slot-timeline");
@@ -28,6 +29,7 @@ const publicSquadBoard = document.querySelector("#public-squad-board");
 const adminRosterBody = document.querySelector("#admin-roster-body");
 const publicRosterBody = document.querySelector("#public-roster-body");
 const publicLiveCard = document.querySelector("#public-live-card");
+const liveOverlay = document.querySelector("#live-overlay");
 const flashBanner = document.querySelector("#flash-banner");
 const celebrationLayer = document.querySelector("#celebration-layer");
 const tickerTrack = document.querySelector("#ticker-track");
@@ -554,6 +556,88 @@ function renderPublicLiveCard() {
   `;
 }
 
+function renderLiveMode() {
+  if (!liveOverlay) return;
+
+  const isLive = Boolean(snapshot?.auctionState?.isLive);
+  const isPublic = uiState.currentView === "public";
+  const shouldShow = isLive && isPublic;
+
+  liveOverlay.classList.toggle("live-overlay--active", shouldShow);
+  document.body.style.overflow = shouldShow ? "hidden" : "";
+
+  if (!shouldShow || !snapshot) return;
+
+  const nominatedId = snapshot.auctionState.nominatedPlayerId;
+  const nominatedPlayer = snapshot.players.find((p) => p.id === nominatedId);
+  const leadingTeam = getLeadingTeam();
+  const activeSlot = getActiveSlot();
+  const teamColorIndex = leadingTeam
+    ? snapshot.teams.findIndex((t) => t.id === leadingTeam.id) + 1
+    : 0;
+  const soldTotal = getCompletedSales().length;
+
+  const playerChanged = nominatedId !== liveModeLastNominatedId;
+  liveModeLastNominatedId = nominatedId;
+
+  liveOverlay.dataset.tc = teamColorIndex || "";
+  liveOverlay.classList.toggle("live-overlay--new-player", playerChanged);
+
+  const playerSection = nominatedPlayer
+    ? `<img
+        class="live-overlay__photo"
+        src="${nominatedPlayer.photoPath || "/assets/players/default.svg"}"
+        alt="${nominatedPlayer.name}"
+      />
+      <div class="live-overlay__player-info">
+        <p class="live-overlay__role">${nominatedPlayer.roleLabel} · ${activeSlot?.label ?? ""}</p>
+        <h1 class="live-overlay__name">${nominatedPlayer.name}</h1>
+        <p class="live-overlay__base">Base Price: ${formatPoints(snapshot.settings.basePrice)}</p>
+      </div>`
+    : `<div class="live-overlay__player-info">
+        <p class="live-overlay__role">${activeSlot?.label ?? ""} · ${activeSlot?.role ?? ""}</p>
+        <h1 class="live-overlay__name">Awaiting Nomination</h1>
+        <p class="live-overlay__base">Base Price: ${formatPoints(snapshot.settings.basePrice)}</p>
+      </div>`;
+
+  const teamSection = leadingTeam
+    ? `<div class="live-overlay__leading-team">
+        <img class="live-overlay__team-logo" src="${leadingTeam.logoPath}" alt="${leadingTeam.name}" />
+        <p class="live-overlay__team-name">${leadingTeam.name}</p>
+        <p class="live-overlay__leading-label">● Leading</p>
+      </div>`
+    : `<div class="live-overlay__leading-team">
+        <p class="live-overlay__team-name" style="color:var(--ink-soft)">Open for Bids</p>
+        <p class="live-overlay__leading-label" style="color:var(--ink-soft)">No bid recorded</p>
+      </div>`;
+
+  liveOverlay.innerHTML = `
+    <div class="live-overlay__bg" aria-hidden="true"></div>
+    <div class="live-overlay__topbar">
+      <div class="live-badge">
+        <span class="live-badge__dot"></span>
+        Live
+      </div>
+      <img class="live-overlay__league-logo" src="${snapshot.league.logoPath}" alt="${snapshot.league.name}" />
+      <span class="live-overlay__league-name">${snapshot.league.name} · ${snapshot.league.seasonName}</span>
+      <div class="live-overlay__slot-info">${activeSlot?.label ?? ""} · ${activeSlot?.role ?? ""}</div>
+    </div>
+    <div class="live-overlay__stage">
+      <div class="live-overlay__player-side">${playerSection}</div>
+      <div class="live-overlay__bid-side">
+        <p class="live-overlay__bid-label">Current Bid</p>
+        <div class="live-overlay__bid-amount">${formatPoints(snapshot.auctionState.currentBid || snapshot.settings.basePrice)}</div>
+        ${teamSection}
+      </div>
+    </div>
+    <div class="live-overlay__footer">
+      <span>Base ${formatPoints(snapshot.settings.basePrice)}</span>
+      <span>Slot ${snapshot.auctionState.currentSlotNumber} of ${snapshot.slots.length}</span>
+      <span>${soldTotal} Sold · ${snapshot.meta.totalPlayers - soldTotal} Remaining</span>
+    </div>
+  `;
+}
+
 function renderTeamCards(container, interactive) {
   if (!snapshot) {
     container.innerHTML = "";
@@ -893,6 +977,7 @@ function render() {
   renderSlotTimeline();
   renderActiveSlotCard();
   renderPublicLiveCard();
+  renderLiveMode();
   renderTeamCards(teamsGrid, true);
   renderTeamCards(publicTeamsGrid, false);
   renderPlayers();

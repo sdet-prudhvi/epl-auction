@@ -1175,6 +1175,304 @@ select {
   color: var(--ink-soft);
 }
 
+/* ── Live Mode Overlay ───────────────────────────────────────────── */
+
+.live-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  overflow: hidden;
+  background: #050b14;
+  grid-template-rows: auto 1fr auto;
+}
+
+.live-overlay--active {
+  display: grid;
+}
+
+/* Ambient glow shifts to leading team colour */
+.live-overlay__bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: background 1.4s ease;
+  background:
+    radial-gradient(ellipse 55% 60% at 78% 50%, var(--team-glow, rgba(255, 106, 0, 0.18)), transparent),
+    radial-gradient(ellipse 40% 50% at 18% 35%, rgba(255, 106, 0, 0.06), transparent);
+}
+
+.live-overlay[data-tc="1"] { --team-glow: rgba(40, 77, 131, 0.42); }
+.live-overlay[data-tc="2"] { --team-glow: rgba(209, 103, 31, 0.42); }
+.live-overlay[data-tc="3"] { --team-glow: rgba(240, 125, 24, 0.42); }
+.live-overlay[data-tc="4"] { --team-glow: rgba(220, 45, 24, 0.42); }
+
+/* Top bar */
+.live-overlay__topbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  position: relative;
+  z-index: 1;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255, 81, 48, 0.18);
+  border: 1px solid rgba(255, 81, 48, 0.35);
+  color: #ff7a5a;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+}
+
+.live-badge__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 14px rgba(255, 81, 48, 0.9);
+  animation: live-pulse 1000ms ease infinite;
+}
+
+.live-overlay__league-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+  flex-shrink: 0;
+}
+
+.live-overlay__league-name {
+  font-family: "Oswald", sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.live-overlay__slot-info {
+  margin-left: auto;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(247, 191, 79, 0.12);
+  color: var(--gold);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+/* Main stage — two columns */
+.live-overlay__stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.live-overlay__player-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 48px;
+  gap: 24px;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.live-overlay__photo {
+  width: min(300px, 38vh);
+  height: min(300px, 38vh);
+  object-fit: cover;
+  border-radius: 26px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.65),
+    0 0 60px var(--team-glow, rgba(255, 106, 0, 0.12));
+}
+
+.live-overlay--new-player .live-overlay__photo {
+  animation: live-player-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.live-overlay__player-info {
+  text-align: center;
+}
+
+.live-overlay--new-player .live-overlay__player-info {
+  animation: live-player-in 480ms 80ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.live-overlay__role {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.live-overlay__name {
+  margin: 0 0 12px;
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(2.6rem, 4.8vw, 5.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: white;
+  text-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+}
+
+.live-overlay__base {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.44);
+  font-size: 0.88rem;
+  letter-spacing: 0.06em;
+}
+
+/* Bid side */
+.live-overlay__bid-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 48px;
+  gap: 20px;
+}
+
+.live-overlay__bid-label {
+  margin: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.44);
+}
+
+.live-overlay__bid-amount {
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(4rem, 9vw, 8rem);
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+  text-align: center;
+  animation: bid-glow 2.2s ease infinite;
+}
+
+.live-overlay__leading-team {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 44px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 200px;
+  text-align: center;
+}
+
+.live-overlay__team-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.5));
+}
+
+.live-overlay__team-name {
+  margin: 0;
+  font-family: "Oswald", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: white;
+}
+
+.live-overlay__leading-label {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mint);
+  font-weight: 700;
+}
+
+/* Footer stats */
+.live-overlay__footer {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  padding: 12px 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  position: relative;
+  z-index: 1;
+}
+
+.live-overlay__footer span {
+  color: rgba(255, 255, 255, 0.44);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Responsive: stack to single column on smaller screens */
+@media (max-width: 768px) {
+  .live-overlay__topbar {
+    padding: 12px 20px;
+    gap: 10px;
+  }
+
+  .live-overlay__league-name {
+    display: none;
+  }
+
+  .live-overlay__stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+
+  .live-overlay__player-side {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 20px;
+  }
+
+  .live-overlay__bid-side {
+    padding: 20px;
+  }
+
+  .live-overlay__photo {
+    width: min(160px, 20vh);
+    height: min(160px, 20vh);
+  }
+
+  .live-overlay__name {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+  }
+
+  .live-overlay__bid-amount {
+    font-size: clamp(2.8rem, 8vw, 4rem);
+  }
+
+  .live-overlay__footer {
+    gap: 20px;
+    padding: 10px 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
 @keyframes ticker-scroll {
   from {
     transform: translateX(0);
@@ -1282,6 +1580,34 @@ select {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes live-player-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes bid-glow {
+  0%,
+  100% {
+    text-shadow:
+      0 0 40px rgba(247, 191, 79, 0.35),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  50% {
+    text-shadow:
+      0 0 80px rgba(247, 191, 79, 0.7),
+      0 0 120px rgba(247, 191, 79, 0.22),
+      0 2px 8px rgba(0, 0, 0, 0.4);
   }
 }
 
