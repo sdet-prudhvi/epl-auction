@@ -18,6 +18,7 @@ let eventSource = null;
 let adminLastNominatedId = null;
 let liveModeLastNominatedId = null;
 
+const auctionProgress = document.querySelector("#auction-progress");
 const summaryCards = document.querySelector("#summary-cards");
 const slotTimeline = document.querySelector("#slot-timeline");
 const activeSlotCard = document.querySelector("#active-slot-card");
@@ -436,6 +437,48 @@ function renderViewState() {
   viewButtons.forEach((button) => {
     button.classList.toggle("view-switch__button--active", button.dataset.view === uiState.currentView);
   });
+}
+
+function renderAuctionProgress() {
+  if (!auctionProgress) return;
+
+  if (!snapshot) {
+    auctionProgress.innerHTML = "";
+    return;
+  }
+
+  const currentSlotNumber = snapshot.auctionState.currentSlotNumber;
+  const totalSlots = snapshot.slots.length;
+  const teamsCount = snapshot.teams.length;
+  const soldInCurrentSlot = getSoldCountForSlot(currentSlotNumber);
+  const auctionSoldCount = getCompletedSales().length;
+  const auctionRemaining = snapshot.meta.liveAuctionPlayerCount - auctionSoldCount;
+
+  const segmentsHTML = snapshot.slots
+    .map((slot) => {
+      const sold = getSoldCountForSlot(slot.slotNumber);
+      const isActive = slot.slotNumber === currentSlotNumber;
+      const isComplete = sold >= teamsCount;
+      const fillPct = Math.round((sold / teamsCount) * 100);
+      let cls = "auction-progress__segment";
+      if (isComplete) cls += " auction-progress__segment--complete";
+      else if (isActive) cls += " auction-progress__segment--active";
+      return `<div class="${cls}" title="${slot.label} · ${slot.role} · ${sold}/${teamsCount} filled">
+        <div class="auction-progress__fill" style="width:${fillPct}%;"></div>
+      </div>`;
+    })
+    .join("");
+
+  auctionProgress.innerHTML = `
+    <div class="auction-progress__inner">
+      <div class="auction-progress__bar" aria-hidden="true">${segmentsHTML}</div>
+      <div class="auction-progress__stats">
+        <span>Slot <strong>${currentSlotNumber}</strong>/${totalSlots}</span>
+        <span><strong>${soldInCurrentSlot}</strong>/${teamsCount} sold this slot</span>
+        <span><strong>${auctionSoldCount}</strong> sold · <strong>${auctionRemaining}</strong> to go</span>
+      </div>
+    </div>
+  `;
 }
 
 function renderSummaryCards() {
@@ -1129,6 +1172,7 @@ function render() {
     return;
   }
 
+  renderAuctionProgress();
   renderSummaryCards();
   renderBranding();
   renderTicker();
