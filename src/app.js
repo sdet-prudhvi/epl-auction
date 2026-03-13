@@ -334,9 +334,9 @@ function renderSummaryCards() {
     },
     { label: "Base Price", value: formatPoints(snapshot.settings.basePrice), helper: "Opening bid" },
     {
-      label: "Server Sync",
-      value: uiState.connected ? "Live" : "Retrying",
-      helper: `${soldCount}/${snapshot.meta.liveAuctionPlayerCount} auctioned · ${lockedCount} locked`,
+      label: "Auctioned",
+      value: `${soldCount + lockedCount}/${snapshot.meta.liveAuctionPlayerCount + lockedCount}`,
+      helper: `${soldCount} sold · ${lockedCount} owner-locked`,
     },
   ];
 
@@ -360,12 +360,17 @@ function getTickerItems() {
 
   const activeSlot = getActiveSlot();
   const latestSales = getCompletedSales()
-    .slice(0, 4)
+    .slice(0, 6)
     .map((sale) => {
       const player = snapshot.players.find((entry) => entry.id === sale.playerId);
       const team = snapshot.teams.find((entry) => entry.id === sale.teamId);
-      return `${player?.name ?? "Player"} sold to ${team?.name ?? "team"} for ${formatPoints(sale.amount)}`;
-    });
+      const purseLeft = team ? `${team.name} purse remaining: ${formatPoints(team.purseRemaining)}` : null;
+      return [
+        `${player?.name ?? "Player"} sold to ${team?.name ?? "team"} for ${formatPoints(sale.amount)}`,
+        purseLeft,
+      ].filter(Boolean);
+    })
+    .flat();
 
   const activityItems = snapshot.activityLog.slice(0, 4).map((item) => item.message);
   const baseItems = [
@@ -767,11 +772,12 @@ function showLoginOverlay() {
   overlay.id = "login-overlay";
   overlay.innerHTML = `
     <div class="login-modal">
+      <button id="login-close" type="button" aria-label="Close" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--ink-soft);font-size:1.4rem;cursor:pointer;line-height:1;">&#x2715;</button>
       <h2>Admin Login</h2>
       <p>Enter your credentials to access the auction controls.</p>
       <form id="login-form">
-        <label>Username<input type="text" id="login-username" autocomplete="username" /></label>
-        <label>Password<input type="password" id="login-password" autocomplete="current-password" /></label>
+        <label>Username<input type="text" id="login-username" name="username" autocomplete="username" /></label>
+        <label>Password<input type="password" id="login-password" name="password" autocomplete="current-password" /></label>
         <p id="login-error" class="login-modal__error" style="display:none;"></p>
         <button class="button" type="submit">Sign In</button>
       </form>
@@ -779,6 +785,10 @@ function showLoginOverlay() {
   `;
   document.body.appendChild(overlay);
   document.body.style.overflow = "hidden";
+  overlay.querySelector("#login-close").addEventListener("click", () => {
+    overlay.remove();
+    document.body.style.overflow = "";
+  });
   overlay.querySelector("#login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = overlay.querySelector("#login-username").value;
