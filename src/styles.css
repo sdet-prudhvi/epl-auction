@@ -720,10 +720,24 @@ select {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.active-slot__label,
 .team-owner {
   margin: 0 0 8px;
   color: var(--ink-soft);
+}
+
+.active-slot__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 14px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(247, 191, 79, 0.24), rgba(255, 106, 0, 0.18));
+  border: 1px solid rgba(247, 191, 79, 0.28);
+  color: #ffe1a0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .active-slot__meta {
@@ -742,10 +756,82 @@ select {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.stage-card--player {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.stage-card--new-player .stage-card__photo {
+  animation: live-player-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stage-card--new-player .stage-card__body {
+  animation: live-player-in 480ms 80ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stage-card__photo {
+  width: 104px;
+  height: 124px;
+  object-fit: cover;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 20px 36px rgba(0, 0, 0, 0.34),
+    0 0 0 1px rgba(247, 191, 79, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stage-card__body {
+  min-width: 0;
+}
+
 .stage-card p,
 .empty-state p {
   margin: 8px 0 0;
   color: var(--ink-soft);
+}
+
+.stage-card__bid-amount {
+  font-size: clamp(2.4rem, 4.2vw, 3.6rem);
+  line-height: 0.95;
+  color: #fff2c8;
+  text-shadow: 0 0 28px rgba(247, 191, 79, 0.18);
+}
+
+.stage-card__bid-track {
+  margin-top: 14px;
+  width: 100%;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+.stage-card__bid-progress {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f7bf4f 0%, #ff8b2d 55%, #ff5130 100%);
+  box-shadow: 0 0 24px rgba(255, 106, 0, 0.28);
+  transition: width 280ms ease;
+}
+
+.stage-card__bid-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+}
+
+.stage-card__bid-meta strong {
+  color: #ffe1a0;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
 }
 
 .action-row--info {
@@ -767,6 +853,39 @@ select {
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.button--sell {
+  grid-column: 1 / -1;
+  padding: 16px 22px;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12), transparent 42%),
+    linear-gradient(135deg, #7f0909, #b31717 52%, #ff3f2f);
+  box-shadow:
+    0 18px 30px rgba(179, 23, 23, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.button--sell:hover {
+  box-shadow:
+    0 22px 40px rgba(179, 23, 23, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.button--sell-live {
+  background-size: 200% 100%, 100% 100%;
+  animation: sell-gradient 4s linear infinite;
+}
+
+.button--sell-pulse {
+  border: 1px solid rgba(255, 218, 168, 0.6);
+  animation:
+    sell-gradient 4s linear infinite,
+    sell-pressure 1800ms ease infinite;
+}
+
 .teams-grid,
 .player-grid,
 .squad-grid {
@@ -780,7 +899,7 @@ select {
 
 .team-card {
   padding: 18px;
-  padding-top: 28px;
+  padding-top: 22px;
   border-radius: 22px;
   color: white;
   min-height: 180px;
@@ -796,27 +915,6 @@ select {
   inset: 0;
   background: linear-gradient(140deg, rgba(255, 255, 255, 0.12), transparent 45%);
   pointer-events: none;
-}
-
-.team-card__crest {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 78px;
-  height: 78px;
-  padding: 8px;
-  border-radius: 22px;
-  background: rgba(7, 14, 26, 0.28);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.24);
-}
-
-.team-card__crest img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.34));
 }
 
 .team-card--1 {
@@ -844,14 +942,72 @@ select {
 }
 
 .team-card--leading {
-  border-color: rgba(255, 255, 255, 0.76);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.team-card--1.team-card--leading {
+  animation: team-lead-glow-blue 1800ms ease infinite;
+}
+
+.team-card--2.team-card--leading {
+  animation: team-lead-glow-gold 1800ms ease infinite;
+}
+
+.team-card--3.team-card--leading {
+  animation: team-lead-glow-orange 1800ms ease infinite;
+}
+
+.team-card--4.team-card--leading {
+  animation: team-lead-glow-red 1800ms ease infinite;
+}
+
+.team-card--bid-flash {
+  animation: bid-confirm-flash 800ms ease;
 }
 
 .team-card__top {
   display: flex;
   justify-content: space-between;
-  gap: 72px;
+  gap: 16px;
   align-items: flex-start;
+}
+
+.team-card__hero {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  margin: 14px 0 10px;
+}
+
+.team-card__crest {
+  width: 104px;
+  height: 104px;
+  padding: 10px;
+  border-radius: 28px;
+  background: rgba(7, 14, 26, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.24);
+}
+
+.team-card__crest img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.34));
+}
+
+.team-card__slots-left {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .team-card .eyebrow,
@@ -884,6 +1040,42 @@ select {
   margin: 0;
 }
 
+.metric-list__bar-row {
+  margin-bottom: -4px;
+}
+
+.team-card__purse-bar {
+  width: 100%;
+  height: 12px;
+  margin-top: -4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.24);
+}
+
+.team-card__purse-spent {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 280ms ease;
+}
+
+.team-card--1 .team-card__purse-spent {
+  background: linear-gradient(90deg, #3a8fff, #8dc0ff);
+}
+
+.team-card--2 .team-card__purse-spent {
+  background: linear-gradient(90deg, #f7bf4f, #ffe6a1);
+}
+
+.team-card--3 .team-card__purse-spent {
+  background: linear-gradient(90deg, #ff7a1d, #ffb14d);
+}
+
+.team-card--4 .team-card__purse-spent {
+  background: linear-gradient(90deg, #c91d24, #ff7d7d);
+}
+
 .team-card__actions {
   display: flex;
   gap: 10px;
@@ -891,10 +1083,50 @@ select {
   margin-top: 16px;
 }
 
-.team-card__actions .button--ghost {
-  background: rgba(255, 255, 255, 0.14);
+.team-bid {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+}
+
+.team-bid--1 {
+  background: linear-gradient(135deg, #1d5ec7, #3a8fff);
+}
+
+.team-bid--2 {
+  color: #261406;
+  background: linear-gradient(135deg, #f7bf4f, #ffe6a1);
+}
+
+.team-bid--3 {
+  background: linear-gradient(135deg, #ff7a1d, #ffab3d);
+}
+
+.team-bid--4 {
+  background: linear-gradient(135deg, #c91d24, #ff5959);
+}
+
+.team-bid--ghost {
   color: white;
-  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.team-bid--ghost.team-bid--1 {
+  background: rgba(58, 143, 255, 0.16);
+  border-color: rgba(142, 192, 255, 0.34);
+}
+
+.team-bid--ghost.team-bid--2 {
+  color: #fff3cf;
+  background: rgba(247, 191, 79, 0.16);
+  border-color: rgba(247, 191, 79, 0.34);
+}
+
+.team-bid--ghost.team-bid--3 {
+  background: rgba(255, 122, 29, 0.16);
+  border-color: rgba(255, 173, 83, 0.34);
+}
+
+.team-bid--ghost.team-bid--4 {
+  background: rgba(255, 89, 89, 0.16);
+  border-color: rgba(255, 120, 120, 0.34);
 }
 
 .player-grid {
@@ -1583,6 +1815,79 @@ select {
   }
 }
 
+@keyframes bid-confirm-flash {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(86, 216, 174, 0),
+      var(--shadow);
+  }
+
+  30% {
+    box-shadow:
+      0 0 0 4px rgba(86, 216, 174, 0.45),
+      0 0 34px rgba(86, 216, 174, 0.42),
+      var(--shadow);
+  }
+
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(86, 216, 174, 0),
+      var(--shadow);
+  }
+}
+
+@keyframes team-lead-glow-blue {
+  0%,
+  100% {
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(58, 143, 255, 0.16);
+    border-color: rgba(141, 192, 255, 0.72);
+  }
+
+  50% {
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(58, 143, 255, 0.22), 0 0 28px rgba(58, 143, 255, 0.42);
+    border-color: rgba(141, 192, 255, 0.94);
+  }
+}
+
+@keyframes team-lead-glow-gold {
+  0%,
+  100% {
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(247, 191, 79, 0.14);
+    border-color: rgba(255, 230, 161, 0.72);
+  }
+
+  50% {
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(247, 191, 79, 0.22), 0 0 28px rgba(247, 191, 79, 0.38);
+    border-color: rgba(255, 230, 161, 0.94);
+  }
+}
+
+@keyframes team-lead-glow-orange {
+  0%,
+  100% {
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(255, 122, 29, 0.14);
+    border-color: rgba(255, 173, 83, 0.72);
+  }
+
+  50% {
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(255, 122, 29, 0.22), 0 0 28px rgba(255, 122, 29, 0.38);
+    border-color: rgba(255, 173, 83, 0.94);
+  }
+}
+
+@keyframes team-lead-glow-red {
+  0%,
+  100% {
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(255, 89, 89, 0.14);
+    border-color: rgba(255, 125, 125, 0.72);
+  }
+
+  50% {
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(255, 89, 89, 0.22), 0 0 28px rgba(255, 89, 89, 0.4);
+    border-color: rgba(255, 125, 125, 0.94);
+  }
+}
+
 @keyframes live-player-in {
   from {
     opacity: 0;
@@ -1608,6 +1913,33 @@ select {
       0 0 80px rgba(247, 191, 79, 0.7),
       0 0 120px rgba(247, 191, 79, 0.22),
       0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes sell-pressure {
+  0%,
+  100% {
+    box-shadow:
+      0 18px 30px rgba(179, 23, 23, 0.26),
+      0 0 0 0 rgba(255, 196, 142, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+
+  50% {
+    box-shadow:
+      0 20px 38px rgba(179, 23, 23, 0.34),
+      0 0 0 5px rgba(255, 196, 142, 0.16),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+}
+
+@keyframes sell-gradient {
+  from {
+    background-position: 200% 0, 0 0;
+  }
+
+  to {
+    background-position: -40% 0, 0 0;
   }
 }
 
@@ -1660,6 +1992,15 @@ select {
   .auction-stage__grid,
   .bid-actions {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .stage-card--player {
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .stage-card__photo {
+    width: 88px;
+    height: 108px;
   }
 
   .public-stage__header {
@@ -1729,6 +2070,15 @@ select {
     grid-template-columns: 1fr;
   }
 
+  .stage-card--player {
+    grid-template-columns: 1fr;
+  }
+
+  .stage-card__photo {
+    width: 100px;
+    height: 120px;
+  }
+
   .filter,
   .filter select {
     width: 100%;
@@ -1744,10 +2094,8 @@ select {
   }
 
   .team-card__crest {
-    position: static;
-    width: 68px;
-    height: 68px;
-    margin-bottom: 12px;
+    width: 84px;
+    height: 84px;
   }
 
   .team-card__top {

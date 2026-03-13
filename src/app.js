@@ -4,13 +4,17 @@ const uiState = {
   connected: false,
   slotFilter: "",
   lastEventKey: null,
+  lastBidEventKey: null,
+  bidFlashTeamId: null,
   token: localStorage.getItem("auction_token") || null,
 };
 
 let snapshot = null;
 let noticeTimeoutId = null;
 let celebrationTimeoutId = null;
+let bidFlashTimeoutId = null;
 let eventSource = null;
+let adminLastNominatedId = null;
 let liveModeLastNominatedId = null;
 
 const summaryCards = document.querySelector("#summary-cards");
@@ -108,6 +112,49 @@ function getTeamSlotPlayer(teamId, slotNumber) {
   return snapshot.players.find(
     (player) => player.soldToTeamId === teamId && player.assignedSlotNumber === slotNumber
   );
+}
+
+function getTeamBidBudget(team, slotNumber) {
+  const slotsPerTeam = snapshot.slots.length;
+  const remainingAfterThis = Math.max(0, slotsPerTeam - team.filledSlots - 1);
+  const reservedFloor = remainingAfterThis * snapshot.settings.basePrice;
+  const maxBid = team.purseRemaining - reservedFloor;
+
+  return {
+    remainingAfterThis,
+    reservedFloor,
+    maxBid,
+    slotFilled: teamHasFilledSlot(team.id, slotNumber),
+  };
+}
+
+function getActiveBidContext(slotNumber) {
+  const leadingTeam = getLeadingTeam();
+
+  if (leadingTeam && !teamHasFilledSlot(leadingTeam.id, slotNumber)) {
+    return {
+      team: leadingTeam,
+      ...getTeamBidBudget(leadingTeam, slotNumber),
+      label: `${leadingTeam.name} ceiling`,
+    };
+  }
+
+  const contenders = snapshot.teams
+    .map((team) => ({
+      team,
+      ...getTeamBidBudget(team, slotNumber),
+    }))
+    .filter((entry) => !entry.slotFilled)
+    .sort((left, right) => right.maxBid - left.maxBid);
+
+  if (!contenders.length) {
+    return null;
+  }
+
+  return {
+    ...contenders[0],
+    label: `${contenders[0].team.name} top ceiling`,
+  };
 }
 
 function getSortedRoster() {
@@ -212,8 +259,32 @@ function maybeCelebrate(nextSnapshot) {
   }
 }
 
+function maybeRegisterBidFlash(nextSnapshot) {
+  const nextEvent = nextSnapshot?.auctionState?.lastEvent;
+  if (!nextEvent || nextEvent.type !== "bid" || nextEvent.key === uiState.lastBidEventKey || !nextEvent.bidId) {
+    return;
+  }
+
+  const bid = nextSnapshot.bids.find((entry) => entry.id === nextEvent.bidId);
+  if (!bid) {
+    return;
+  }
+
+  uiState.lastBidEventKey = nextEvent.key;
+  uiState.bidFlashTeamId = bid.teamId;
+
+  if (bidFlashTimeoutId) {
+    clearTimeout(bidFlashTimeoutId);
+  }
+
+  bidFlashTimeoutId = window.setTimeout(() => {
+    uiState.bidFlashTeamId = null;
+  }, 820);
+}
+
 function setSnapshot(nextSnapshot) {
   maybeCelebrate(nextSnapshot);
+  maybeRegisterBidFlash(nextSnapshot);
   snapshot = nextSnapshot;
 
   if (!uiState.slotFilter) {
@@ -473,13 +544,20 @@ function renderActiveSlotCard() {
   const activePlayers = getPendingPlayersForSlot(snapshot.auctionState.currentSlotNumber);
   const selectedPlayer = getSelectedPlayer();
   const leadingTeam = getLeadingTeam();
+  const bidContext = getActiveBidContext(snapshot.auctionState.currentSlotNumber);
+  const bidAmount = snapshot.auctionState.currentBid || snapshot.settings.basePrice;
+  const ceilingAmount = Math.max(snapshot.settings.basePrice, bidContext?.maxBid ?? snapshot.settings.basePrice);
+  const progressWidth = Math.min(100, Math.max(0, (bidAmount / ceilingAmount) * 100));
+  const playerChanged = Boolean(selectedPlayer?.id) && selectedPlayer.id !== adminLastNominatedId;
+
+  adminLastNominatedId = selectedPlayer?.id ?? null;
 
   auctionBadge.textContent = snapshot.auctionState.isLive ? "Live" : "Paused";
 
   activeSlotCard.innerHTML = `
     <div class="auction-stage__top">
       <div>
-        <p class="active-slot__label">${activeSlot.label}</p>
+        <div class="active-slot__pill">${activeSlot.label} · ${activeSlot.role}</div>
         <h3>${activeSlot.role}</h3>
       </div>
       <div class="active-slot__meta">${activePlayers.length} live players left</div>
@@ -488,14 +566,22 @@ function renderActiveSlotCard() {
       ${
         selectedPlayer
           ? `
-            <article class="stage-card">
-              <span class="eyebrow">Randomly Revealed Player</span>
-              <h4>${selectedPlayer.name}</h4>
-              <p>${selectedPlayer.roleLabel}</p>
-              <div class="pill-row">
-                <span class="mini-pill">Base ${formatPoints(selectedPlayer.basePrice)}</span>
-                <span class="mini-pill">${selectedPlayer.eligibilityLabel}</span>
-                <span class="mini-pill">Auto-pop after each sale</span>
+            <article class="stage-card stage-card--player ${playerChanged ? "stage-card--new-player" : ""}">
+              <img
+                class="stage-card__photo"
+                src="${selectedPlayer.photoPath || "/assets/players/default.svg"}"
+                alt="${selectedPlayer.name}"
+                loading="lazy"
+              />
+              <div class="stage-card__body">
+                <span class="eyebrow">Randomly Revealed Player</span>
+                <h4>${selectedPlayer.name}</h4>
+                <p>${selectedPlayer.roleLabel}</p>
+                <div class="pill-row">
+                  <span class="mini-pill">Base ${formatPoints(selectedPlayer.basePrice)}</span>
+                  <span class="mini-pill">${selectedPlayer.eligibilityLabel}</span>
+                  <span class="mini-pill">Auto-pop after each sale</span>
+                </div>
               </div>
             </article>
           `
@@ -510,13 +596,27 @@ function renderActiveSlotCard() {
             </article>
           `
       }
-      <article class="stage-card">
+      <article class="stage-card stage-card--bid">
         <span class="eyebrow">Current Bid</span>
-        <h4>${snapshot.auctionState.currentBid ? formatPoints(snapshot.auctionState.currentBid) : "-"}</h4>
+        <h4 class="stage-card__bid-amount">${formatPoints(bidAmount)}</h4>
         <p>${leadingTeam ? `Leading team: ${leadingTeam.name}` : "No recorded bid yet"}</p>
+        <div class="stage-card__bid-track">
+          <div class="stage-card__bid-progress" style="width:${progressWidth}%;"></div>
+        </div>
+        <div class="stage-card__bid-meta">
+          <span>${bidContext?.label ?? "Bid ceiling pending"}</span>
+          <strong>${formatPoints(ceilingAmount)}</strong>
+        </div>
         <div class="pill-row">
           <span class="mini-pill">${snapshot.auctionState.isLive ? "Auction live" : "Auction paused"}</span>
           <span class="mini-pill">${getSoldCountForSlot(snapshot.auctionState.currentSlotNumber)}/4 filled in this slot</span>
+          ${
+            bidContext
+              ? `<span class="mini-pill">${
+                  progressWidth >= 90 ? "Near bid ceiling" : progressWidth >= 70 ? "Pressure zone" : "Ceiling healthy"
+                }</span>`
+              : ""
+          }
         </div>
       </article>
     </div>
@@ -647,15 +747,16 @@ function renderTeamCards(container, interactive) {
   container.innerHTML = snapshot.teams
     .map(
       (team, index) => {
-        const slotsPerTeam = snapshot.slots.length;
-        const remainingAfterThis = Math.max(0, slotsPerTeam - team.filledSlots - 1);
-        const reservedFloor = remainingAfterThis * snapshot.settings.basePrice;
-        const maxBid = team.purseRemaining - reservedFloor;
+        const { remainingAfterThis, reservedFloor, maxBid, slotFilled } = getTeamBidBudget(
+          team,
+          snapshot.auctionState.currentSlotNumber
+        );
+        const shouldFlashBid = uiState.bidFlashTeamId === team.id;
+        const spentAmount = team.purseTotal - team.purseRemaining;
+        const spentPercent = Math.min(100, Math.max(0, (spentAmount / team.purseTotal) * 100));
+        const slotsLeft = Math.max(0, snapshot.meta.squadSize - team.filledSlots);
         return `
-        <article class="team-card team-card--${index + 1} ${snapshot.auctionState.leadingTeamId === team.id ? "team-card--leading" : ""}">
-          <div class="team-card__crest">
-            <img src="${team.logoPath}" alt="${team.name} logo" loading="lazy" />
-          </div>
+        <article class="team-card team-card--${index + 1} ${snapshot.auctionState.leadingTeamId === team.id ? "team-card--leading" : ""} ${shouldFlashBid ? "team-card--bid-flash" : ""}">
           <div class="team-card__top">
             <div>
               <span class="eyebrow">Franchise ${index + 1}</span>
@@ -663,11 +764,24 @@ function renderTeamCards(container, interactive) {
             </div>
             <span class="team-code">${team.code}</span>
           </div>
+          <div class="team-card__hero">
+            <div class="team-card__crest">
+              <img src="${team.logoPath}" alt="${team.name} logo" loading="lazy" />
+            </div>
+            <span class="team-card__slots-left">${slotsLeft} slots remaining</span>
+          </div>
           <p class="team-owner">${interactive ? "Admin records bids on behalf of owners" : "Public purse display"}</p>
           <dl class="metric-list">
             <div>
               <dt>Purse</dt>
               <dd>${formatPoints(team.purseRemaining)} / ${formatPoints(team.purseTotal)}</dd>
+            </div>
+            <div class="metric-list__bar-row">
+              <dt>Spent</dt>
+              <dd>${formatPoints(spentAmount)}</dd>
+            </div>
+            <div class="team-card__purse-bar" aria-hidden="true">
+              <div class="team-card__purse-spent" style="width:${spentPercent}%;"></div>
             </div>
             <div>
               <dt>Players Bought</dt>
@@ -689,13 +803,12 @@ function renderTeamCards(container, interactive) {
               ? (() => {
                   const currentBid = snapshot.auctionState.currentBid || snapshot.settings.basePrice;
                   const allowedStep = currentBid < 10000 ? 1000 : 2000;
-                  const slotFilled = teamHasFilledSlot(team.id, snapshot.auctionState.currentSlotNumber);
                   const disable1k = slotFilled || allowedStep !== 1000 || (currentBid + 1000) > maxBid;
                   const disable2k = slotFilled || allowedStep !== 2000 || (currentBid + 2000) > maxBid;
                   return `
                 <div class="team-card__actions">
-                  <button class="button team-bid" type="button" data-team-id="${team.id}" data-step="1000" ${disable1k ? "disabled" : ""}>Record +1,000</button>
-                  <button class="button button--ghost team-bid" type="button" data-team-id="${team.id}" data-step="2000" ${disable2k ? "disabled" : ""}>Record +2,000</button>
+                  <button class="button team-bid team-bid--${index + 1}" type="button" data-team-id="${team.id}" data-step="1000" ${disable1k ? "disabled" : ""}>Record +1,000</button>
+                  <button class="button button--ghost team-bid team-bid--${index + 1} team-bid--ghost" type="button" data-team-id="${team.id}" data-step="2000" ${disable2k ? "disabled" : ""}>Record +2,000</button>
                 </div>
               `;
                 })()
@@ -993,7 +1106,13 @@ function render() {
   nextSlotButton.disabled =
     snapshot.auctionState.currentSlotNumber === snapshot.slots.length ||
     !isSlotComplete(snapshot.auctionState.currentSlotNumber);
-  sellPlayerButton.disabled = !(snapshot.auctionState.nominatedPlayerId && snapshot.auctionState.leadingTeamId);
+  const canSell = Boolean(snapshot.auctionState.nominatedPlayerId && snapshot.auctionState.leadingTeamId);
+  sellPlayerButton.disabled = !canSell;
+  sellPlayerButton.classList.toggle("button--sell-live", canSell);
+  sellPlayerButton.classList.toggle(
+    "button--sell-pulse",
+    Boolean(snapshot.auctionState.isLive && snapshot.auctionState.nominatedPlayerId && snapshot.auctionState.leadingTeamId)
+  );
   undoSaleButton.disabled = snapshot.undoStack.length === 0;
   toggleLiveButton.textContent = snapshot.auctionState.isLive ? "Pause Auction" : "Start Auction";
 }
