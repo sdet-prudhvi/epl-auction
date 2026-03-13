@@ -13,6 +13,7 @@ let snapshot = null;
 let noticeTimeoutId = null;
 let celebrationTimeoutId = null;
 let bidFlashTimeoutId = null;
+let soldMomentTimeoutId = null;
 let eventSource = null;
 let adminLastNominatedId = null;
 let liveModeLastNominatedId = null;
@@ -34,6 +35,7 @@ const adminRosterBody = document.querySelector("#admin-roster-body");
 const publicRosterBody = document.querySelector("#public-roster-body");
 const publicLiveCard = document.querySelector("#public-live-card");
 const liveOverlay = document.querySelector("#live-overlay");
+const soldMoment = document.querySelector("#sold-moment");
 const flashBanner = document.querySelector("#flash-banner");
 const celebrationLayer = document.querySelector("#celebration-layer");
 const tickerTrack = document.querySelector("#ticker-track");
@@ -234,6 +236,50 @@ function triggerCelebration(playerName, teamName) {
   }, 1800);
 }
 
+function triggerSoldMoment(player, team, amount) {
+  if (!soldMoment) {
+    triggerCelebration(player.name, team.name);
+    return;
+  }
+
+  if (soldMomentTimeoutId) {
+    clearTimeout(soldMomentTimeoutId);
+  }
+
+  const teamIndex = snapshot?.teams.findIndex((t) => t.id === team.id) ?? -1;
+  const tcClass = teamIndex >= 0 ? `sold-moment--tc-${teamIndex + 1}` : "";
+
+  soldMoment.className = `sold-moment sold-moment--active ${tcClass}`;
+  soldMoment.innerHTML = `
+    <div class="sold-moment__backdrop" aria-hidden="true"></div>
+    <div class="sold-moment__content">
+      <div class="sold-moment__photo-wrap">
+        <img
+          class="sold-moment__photo"
+          src="${player.photoPath || "/assets/players/default.svg"}"
+          alt="${player.name}"
+        />
+        <div class="sold-moment__stamp">SOLD</div>
+      </div>
+      <div class="sold-moment__player-name">${player.name}</div>
+      <div class="sold-moment__amount">${formatPoints(amount)}</div>
+      <div class="sold-moment__team">
+        <img class="sold-moment__team-logo" src="${team.logoPath}" alt="${team.name}" />
+        <span class="sold-moment__team-name">${team.name}</span>
+      </div>
+    </div>
+  `;
+
+  soldMomentTimeoutId = window.setTimeout(() => {
+    soldMoment.classList.add("sold-moment--out");
+    window.setTimeout(() => {
+      soldMoment.className = "sold-moment";
+      soldMoment.innerHTML = "";
+      triggerCelebration(player.name, team.name);
+    }, 280);
+  }, 1200);
+}
+
 function maybeCelebrate(nextSnapshot) {
   const nextEvent = nextSnapshot?.auctionState?.lastEvent;
   if (!nextEvent || nextEvent.key === uiState.lastEventKey) {
@@ -255,7 +301,7 @@ function maybeCelebrate(nextSnapshot) {
   const team = nextSnapshot.teams.find((entry) => entry.id === purchase.teamId);
 
   if (player && team) {
-    triggerCelebration(player.name, team.name);
+    triggerSoldMoment(player, team, purchase.amount);
   }
 }
 
