@@ -1,5 +1,5 @@
 const uiState = {
-  currentView: "admin",
+  currentView: localStorage.getItem("auction_token") ? "admin" : "public",
   notice: null,
   connected: false,
   slotFilter: "",
@@ -778,6 +778,7 @@ function showLoginOverlay() {
     </div>
   `;
   document.body.appendChild(overlay);
+  document.body.style.overflow = "hidden";
   overlay.querySelector("#login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = overlay.querySelector("#login-username").value;
@@ -794,6 +795,9 @@ function showLoginOverlay() {
         uiState.token = data.token;
         localStorage.setItem("auction_token", data.token);
         overlay.remove();
+        document.body.style.overflow = "";
+        uiState.currentView = "admin";
+        render();
       } else {
         errorEl.textContent = data.message || "Login failed.";
         errorEl.style.display = "block";
@@ -843,6 +847,10 @@ function render() {
 
 viewButtons.forEach((button) => {
   button.addEventListener("click", () => {
+    if (button.dataset.view === "admin" && !uiState.token) {
+      showLoginOverlay();
+      return;
+    }
     uiState.currentView = button.dataset.view;
     render();
   });
@@ -900,9 +908,6 @@ window.addEventListener("beforeunload", () => {
 });
 
 render();
-if (!uiState.token) {
-  showLoginOverlay();
-}
 loadState().then(() => {
   connectEvents();
 });
