@@ -10,6 +10,33 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function hydrateState(state) {
+  const seed = createSeedState();
+
+  state.league = {
+    ...seed.league,
+    ...state.league,
+    logoPath: state.league?.logoPath || seed.league.logoPath,
+  };
+
+  state.settings = {
+    ...seed.settings,
+    ...state.settings,
+    sponsors: state.settings?.sponsors?.length ? state.settings.sponsors : seed.settings.sponsors,
+  };
+
+  state.teams = (state.teams || []).map((team) => {
+    const seededTeam = seed.teams.find((entry) => entry.id === team.id);
+    return {
+      ...seededTeam,
+      ...team,
+      logoPath: team.logoPath || seededTeam?.logoPath || null,
+    };
+  });
+
+  return state;
+}
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -165,14 +192,14 @@ async function ensureStateFile() {
 async function loadState() {
   if (process.env.DATABASE_URL) {
     const data = await loadFromDb();
-    if (data) return data;
+    if (data) return hydrateState(data);
     const seed = createSeedState();
     await saveToDb(seed);
     return seed;
   }
   await ensureStateFile();
   const file = await readFile(stateFile, "utf8");
-  return JSON.parse(file);
+  return hydrateState(JSON.parse(file));
 }
 
 async function saveState(state) {

@@ -31,6 +31,8 @@ const publicLiveCard = document.querySelector("#public-live-card");
 const flashBanner = document.querySelector("#flash-banner");
 const celebrationLayer = document.querySelector("#celebration-layer");
 const tickerTrack = document.querySelector("#ticker-track");
+const sponsorTrack = document.querySelector("#sponsor-track");
+const leagueLogo = document.querySelector("#league-logo");
 const adminView = document.querySelector("#admin-view");
 const publicView = document.querySelector("#public-view");
 const adminActions = document.querySelector("#admin-actions");
@@ -401,6 +403,33 @@ function renderTicker() {
     .join("");
 }
 
+function renderBranding() {
+  if (!snapshot) {
+    return;
+  }
+
+  if (leagueLogo) {
+    leagueLogo.src = snapshot.league.logoPath;
+  }
+
+  if (!sponsorTrack) {
+    return;
+  }
+
+  const sponsors = snapshot.settings.sponsors || [];
+  const repeated = sponsors.concat(sponsors);
+  sponsorTrack.innerHTML = repeated
+    .map(
+      (sponsor) => `
+        <article class="sponsor-badge">
+          <img src="${sponsor.logoPath}" alt="${sponsor.name} logo" loading="lazy" />
+          <span>${sponsor.name}</span>
+        </article>
+      `
+    )
+    .join("");
+}
+
 function renderSlotTimeline() {
   if (!snapshot) {
     slotTimeline.innerHTML = "";
@@ -512,6 +541,7 @@ function renderPublicLiveCard() {
         </p>
       </div>
       <div class="public-stage__score">
+        <img class="public-stage__logo" src="${snapshot.league.logoPath}" alt="${snapshot.league.name} logo" />
         <strong>${formatPoints(snapshot.auctionState.currentBid || snapshot.settings.basePrice)}</strong>
         <span>${leadingTeam ? `${leadingTeam.name} leading` : "Base price ready"}</span>
       </div>
@@ -539,6 +569,9 @@ function renderTeamCards(container, interactive) {
         const maxBid = team.purseRemaining - reservedFloor;
         return `
         <article class="team-card team-card--${index + 1} ${snapshot.auctionState.leadingTeamId === team.id ? "team-card--leading" : ""}">
+          <div class="team-card__crest">
+            <img src="${team.logoPath}" alt="${team.name} logo" loading="lazy" />
+          </div>
           <div class="team-card__top">
             <div>
               <span class="eyebrow">Franchise ${index + 1}</span>
@@ -708,6 +741,7 @@ function renderSquadBoard(container) {
               <span class="eyebrow">Squad Sheet</span>
               <h3>${team.name}</h3>
             </div>
+            <img class="squad-card__logo" src="${team.logoPath}" alt="${team.name} logo" loading="lazy" />
             <span class="mini-pill">${team.filledSlots}/${snapshot.meta.squadSize} filled</span>
           </div>
           <div class="slot-list">
@@ -853,6 +887,7 @@ function render() {
   }
 
   renderSummaryCards();
+  renderBranding();
   renderTicker();
   renderFilters();
   renderSlotTimeline();

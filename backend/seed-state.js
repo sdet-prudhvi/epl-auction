@@ -1,4 +1,4 @@
-import { createInitialState, ownerAssignments, players, slotTemplate, teams } from "../src/data/seed.js";
+import { branding, createInitialState, ownerAssignments, players, slotTemplate, teams } from "../src/data/seed.js";
 
 function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -50,11 +50,13 @@ function createSeedState() {
       id: "epl-season-1",
       name: initial.leagueName,
       seasonName: initial.seasonName,
+      logoPath: branding.leagueLogoPath,
     },
     settings: {
       basePrice: players[0]?.basePrice ?? 3000,
       pursePerTeam: teams[0]?.purseTotal ?? 96000,
       allowUnsold: false,
+      sponsors: deepClone(branding.sponsors),
       roles: ["admin", "scorer", "observer"],
       visibility: {
         purse: true,
