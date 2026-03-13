@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { URL } from "node:url";
 import { randomUUID } from "node:crypto";
-import { applyAction, getState } from "./backend/store.js";
+import { applyAction, getState, resetAuction } from "./backend/store.js";
 
 const rootDir = process.cwd();
 const port = Number(process.env.PORT || 4173);
@@ -135,6 +135,18 @@ const server = http.createServer(async (req, res) => {
     req.on("close", () => {
       eventClients.delete(res);
     });
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/api/reset") {
+    if (!requireAuth(req, res)) return;
+    try {
+      const { state, result } = await resetAuction();
+      broadcastState(state);
+      sendJson(res, 200, { ok: true, message: result.message, state });
+    } catch (error) {
+      sendJson(res, 500, { ok: false, message: error instanceof Error ? error.message : "Reset failed." });
+    }
     return;
   }
 

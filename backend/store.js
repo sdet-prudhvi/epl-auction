@@ -284,9 +284,27 @@ async function applyAction(action, payload = {}) {
           throw new Error(`${team.name} already has a locked or sold player in this slot.`);
         }
 
-        const nextBid = (state.auctionState.currentBid || player.basePrice) + increment;
+        const currentBid = state.auctionState.currentBid || player.basePrice;
+        const allowedIncrement = currentBid < 10000 ? 1000 : 2000;
+        if (increment !== allowedIncrement) {
+          throw new Error(
+            `Increment must be ${allowedIncrement.toLocaleString()} at this bid level (current: ${currentBid.toLocaleString()}).`
+          );
+        }
+
+        const nextBid = currentBid + increment;
         if (team.purseRemaining < nextBid) {
           throw new Error(`${team.name} does not have enough purse for ${nextBid}.`);
+        }
+
+        const slotsPerTeam = state.slots.length;
+        const remainingAfterThis = Math.max(0, slotsPerTeam - team.filledSlots - 1);
+        const reservedFloor = remainingAfterThis * state.settings.basePrice;
+        const maxAllowedBid = team.purseRemaining - reservedFloor;
+        if (nextBid > maxAllowedBid) {
+          throw new Error(
+            `${team.name} cannot bid ${nextBid.toLocaleString()}. Max allowed is ${maxAllowedBid.toLocaleString()} — ${reservedFloor.toLocaleString()} reserved for ${remainingAfterThis} remaining slot${remainingAfterThis !== 1 ? "s" : ""} at base price.`
+          );
         }
 
         const bid = {
@@ -463,4 +481,10 @@ async function applyAction(action, payload = {}) {
   });
 }
 
-export { applyAction, getState };
+async function resetAuction() {
+  const fresh = createSeedState();
+  await saveState(fresh);
+  return { state: fresh, result: { message: "Auction reset to fresh state." } };
+}
+
+export { applyAction, getState, resetAuction };

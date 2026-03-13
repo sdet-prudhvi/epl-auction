@@ -532,7 +532,12 @@ function renderTeamCards(container, interactive) {
 
   container.innerHTML = snapshot.teams
     .map(
-      (team, index) => `
+      (team, index) => {
+        const slotsPerTeam = snapshot.slots.length;
+        const remainingAfterThis = Math.max(0, slotsPerTeam - team.filledSlots - 1);
+        const reservedFloor = remainingAfterThis * snapshot.settings.basePrice;
+        const maxBid = team.purseRemaining - reservedFloor;
+        return `
         <article class="team-card team-card--${index + 1} ${snapshot.auctionState.leadingTeamId === team.id ? "team-card--leading" : ""}">
           <div class="team-card__top">
             <div>
@@ -551,19 +556,37 @@ function renderTeamCards(container, interactive) {
               <dt>Players Bought</dt>
               <dd>${team.filledSlots} / ${snapshot.meta.squadSize}</dd>
             </div>
+            ${interactive ? `
+            <div>
+              <dt>Max Bid</dt>
+              <dd style="color:${maxBid <= snapshot.settings.basePrice ? "var(--signal)" : "inherit"}">${formatPoints(maxBid)}</dd>
+            </div>
+            <div>
+              <dt>Reserved Floor</dt>
+              <dd style="color:var(--ink-soft)">${formatPoints(reservedFloor)} (${remainingAfterThis} slots)</dd>
+            </div>
+            ` : ""}
           </dl>
           ${
             interactive
-              ? `
+              ? (() => {
+                  const currentBid = snapshot.auctionState.currentBid || snapshot.settings.basePrice;
+                  const allowedStep = currentBid < 10000 ? 1000 : 2000;
+                  const slotFilled = teamHasFilledSlot(team.id, snapshot.auctionState.currentSlotNumber);
+                  const disable1k = slotFilled || allowedStep !== 1000 || (currentBid + 1000) > maxBid;
+                  const disable2k = slotFilled || allowedStep !== 2000 || (currentBid + 2000) > maxBid;
+                  return `
                 <div class="team-card__actions">
-                  <button class="button team-bid" type="button" data-team-id="${team.id}" data-step="1000" ${teamHasFilledSlot(team.id, snapshot.auctionState.currentSlotNumber) ? "disabled" : ""}>Record +1,000</button>
-                  <button class="button button--ghost team-bid" type="button" data-team-id="${team.id}" data-step="2000" ${teamHasFilledSlot(team.id, snapshot.auctionState.currentSlotNumber) ? "disabled" : ""}>Record +2,000</button>
+                  <button class="button team-bid" type="button" data-team-id="${team.id}" data-step="1000" ${disable1k ? "disabled" : ""}>Record +1,000</button>
+                  <button class="button button--ghost team-bid" type="button" data-team-id="${team.id}" data-step="2000" ${disable2k ? "disabled" : ""}>Record +2,000</button>
                 </div>
-              `
+              `;
+                })()
               : ""
           }
         </article>
-      `
+      `;
+      }
     )
     .join("");
 
@@ -890,6 +913,39 @@ sellPlayerButton.addEventListener("click", () => {
 
 undoSaleButton.addEventListener("click", () => {
   performAction("reopen-last-sold");
+});
+
+document.querySelector("#reset-auction").addEventListener("click", async () => {
+  const confirmed = window.confirm(
+    "Reset the entire auction back to its original state?\n\nThis will clear all bids, sales, and purse changes. This cannot be undone."
+  );
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch("/api/reset", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(uiState.token ? { Authorization: `Bearer ${uiState.token}` } : {}),
+      },
+    });
+    const data = await readJson(response);
+    if (response.status === 401) {
+      uiState.token = null;
+      localStorage.removeItem("auction_token");
+      showLoginOverlay();
+      showNotice("warning", "Session expired. Please log in again.");
+      return;
+    }
+    if (!response.ok) {
+      showNotice("warning", data.message || "Reset failed.");
+      return;
+    }
+    setSnapshot(data.state);
+    showNotice("success", "Auction has been reset to its original state.");
+  } catch {
+    showNotice("warning", "The auction server could not be reached.");
+  }
 });
 
 bidStepButtons.forEach((button) => {
