@@ -925,8 +925,8 @@ select {
 
 .team-card--2 {
   background:
-    radial-gradient(circle at top right, rgba(255, 218, 163, 0.22), transparent 34%),
-    linear-gradient(135deg, #3a1306, #8c3710 52%, #d1671f);
+    radial-gradient(circle at top right, rgba(255, 230, 100, 0.26), transparent 34%),
+    linear-gradient(135deg, #1a1400, #3d2e00 46%, #6b4e00);
 }
 
 .team-card--3 {
