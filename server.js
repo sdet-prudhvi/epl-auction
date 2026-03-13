@@ -2,12 +2,16 @@ import http from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { URL } from "node:url";
+import { randomUUID } from "node:crypto";
 import { applyAction, getState } from "./backend/store.js";
 
 const rootDir = process.cwd();
 const port = Number(process.env.PORT || 4173);
 const host = process.env.HOST || "0.0.0.0";
 const eventClients = new Set();
+const sessions = new Set();
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "auctionpassword";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -57,6 +61,16 @@ async function readBody(req) {
   return text ? JSON.parse(text) : {};
 }
 
+function requireAuth(req, res) {
+  const auth = req.headers["authorization"] || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+  if (!token || !sessions.has(token)) {
+    sendJson(res, 401, { ok: false, message: "Unauthorized." });
+    return false;
+  }
+  return true;
+}
+
 async function serveStatic(req, res, pathname) {
   const relativePath = pathname === "/" ? "/index.html" : pathname;
   const filePath = path.join(rootDir, relativePath);
@@ -89,6 +103,18 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "POST" && pathname === "/api/login") {
+    const body = await readBody(req);
+    if (body.username === ADMIN_USERNAME && body.password === ADMIN_PASSWORD) {
+      const token = randomUUID();
+      sessions.add(token);
+      sendJson(res, 200, { ok: true, token });
+    } else {
+      sendJson(res, 401, { ok: false, message: "Invalid credentials." });
+    }
+    return;
+  }
+
   if (req.method === "GET" && pathname === "/api/state") {
     const state = await getState();
     sendJson(res, 200, { ok: true, state });
@@ -113,6 +139,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "POST" && pathname.startsWith("/api/actions/")) {
+    if (!requireAuth(req, res)) return;
     const action = pathname.replace("/api/actions/", "");
 
     try {

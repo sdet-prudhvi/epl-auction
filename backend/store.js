@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createSeedState } from "./seed-state.js";
+import { loadFromDb, saveToDb } from "./db.js";
 
 const dataDir = path.join(process.cwd(), "data");
 const stateFile = path.join(dataDir, "auction-state.json");
@@ -160,12 +161,23 @@ async function ensureStateFile() {
 }
 
 async function loadState() {
+  if (process.env.DATABASE_URL) {
+    const data = await loadFromDb();
+    if (data) return data;
+    const seed = createSeedState();
+    await saveToDb(seed);
+    return seed;
+  }
   await ensureStateFile();
   const file = await readFile(stateFile, "utf8");
   return JSON.parse(file);
 }
 
 async function saveState(state) {
+  if (process.env.DATABASE_URL) {
+    await saveToDb(state);
+    return;
+  }
   await ensureStateFile();
   await writeFile(stateFile, `${JSON.stringify(state, null, 2)}\n`, "utf8");
 }

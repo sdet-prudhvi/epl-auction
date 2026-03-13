@@ -11,6 +11,51 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./src/styles.css" />
+    <style>
+      #login-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 11, 20, 0.94);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .login-modal {
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 40px;
+        width: min(420px, calc(100vw - 40px));
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .login-modal h2 { margin: 0; font-family: 'Oswald', sans-serif; letter-spacing: 0.04em; }
+      .login-modal > p { margin: 0; color: var(--ink-soft); font-size: 0.9rem; }
+      .login-modal form { display: flex; flex-direction: column; gap: 12px; }
+      .login-modal label {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.88rem;
+        color: var(--ink-soft);
+      }
+      .login-modal input {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        color: var(--ink);
+        padding: 10px 12px;
+        font-size: 1rem;
+        font-family: inherit;
+      }
+      .login-modal input:focus {
+        outline: none;
+        border-color: rgba(255, 106, 0, 0.5);
+      }
+      .login-modal__error { color: var(--signal); font-size: 0.88rem; margin: 0; }
+    </style>
   </head>
   <body>
     <div class="page-shell">

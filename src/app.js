@@ -4,6 +4,7 @@ const uiState = {
   connected: false,
   slotFilter: "",
   lastEventKey: null,
+  token: localStorage.getItem("auction_token") || null,
 };
 
 let snapshot = null;
@@ -233,11 +234,20 @@ async function performAction(action, payload = {}) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...(uiState.token ? { Authorization: `Bearer ${uiState.token}` } : {}),
       },
       body: JSON.stringify(payload),
     });
 
     const data = await readJson(response);
+
+    if (response.status === 401) {
+      uiState.token = null;
+      localStorage.removeItem("auction_token");
+      showLoginOverlay();
+      showNotice("warning", "Session expired. Please log in again.");
+      return false;
+    }
 
     if (!response.ok) {
       showNotice("warning", data.message || "Action failed.");
@@ -751,6 +761,50 @@ function renderLoadingState() {
   `;
 }
 
+function showLoginOverlay() {
+  if (document.querySelector("#login-overlay")) return;
+  const overlay = document.createElement("div");
+  overlay.id = "login-overlay";
+  overlay.innerHTML = `
+    <div class="login-modal">
+      <h2>Admin Login</h2>
+      <p>Enter your credentials to access the auction controls.</p>
+      <form id="login-form">
+        <label>Username<input type="text" id="login-username" autocomplete="username" /></label>
+        <label>Password<input type="password" id="login-password" autocomplete="current-password" /></label>
+        <p id="login-error" class="login-modal__error" style="display:none;"></p>
+        <button class="button" type="submit">Sign In</button>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector("#login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = overlay.querySelector("#login-username").value;
+    const password = overlay.querySelector("#login-password").value;
+    const errorEl = overlay.querySelector("#login-error");
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.token) {
+        uiState.token = data.token;
+        localStorage.setItem("auction_token", data.token);
+        overlay.remove();
+      } else {
+        errorEl.textContent = data.message || "Login failed.";
+        errorEl.style.display = "block";
+      }
+    } catch {
+      errorEl.textContent = "Could not reach the server.";
+      errorEl.style.display = "block";
+    }
+  });
+}
+
 function render() {
   document.body.classList.toggle("body-live", Boolean(snapshot?.auctionState?.isLive));
   renderViewState();
@@ -846,6 +900,9 @@ window.addEventListener("beforeunload", () => {
 });
 
 render();
+if (!uiState.token) {
+  showLoginOverlay();
+}
 loadState().then(() => {
   connectEvents();
 });
