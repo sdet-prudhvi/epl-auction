@@ -34,6 +34,20 @@ function hydrateState(state) {
     };
   });
 
+  state.players = (state.players || []).map((player) => {
+    const seededPlayer = seed.players.find((entry) => entry.id === player.id);
+    if (!seededPlayer) return player;
+    return {
+      ...seededPlayer,
+      ...player,
+      // Static fields — always take from seed so deploys pick them up
+      photoPath: seededPlayer.photoPath || player.photoPath || null,
+      nominationOrder: seededPlayer.nominationOrder,
+      roleLabel: seededPlayer.roleLabel,
+      basePrice: seededPlayer.basePrice,
+    };
+  });
+
   return state;
 }
 
