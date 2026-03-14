@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Embed Preview — Option A & B</title>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: #060d1a;
+      color: white;
+      padding: 32px 24px;
+    }
+
+    h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 16px;
+    }
+
+    .section { margin-bottom: 56px; }
+
+    .label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .label--a { background: rgba(247,191,79,0.18); color: #f7bf4f; border: 1px solid rgba(247,191,79,0.3); }
+    .label--b { background: rgba(255,106,0,0.18); color: #ff8c42; border: 1px solid rgba(255,106,0,0.3); }
+
+    /* ── Shared overlay shell ── */
+    .overlay {
+      position: relative;
+      width: 100%;
+      max-width: 1100px;
+      border-radius: 24px;
+      overflow: hidden;
+      background: #050b14;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+    }
+
+    /* top bar */
+    .overlay__topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 28px;
+      background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .live-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #ff3f2f;
+      box-shadow: 0 0 14px rgba(255,63,47,0.8);
+      animation: pulse 1.4s ease infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .overlay__topbar span { font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+    .overlay__topbar strong { font-family: 'Oswald', sans-serif; font-size: 1rem; letter-spacing: 0.08em; margin-left: auto; color: rgba(255,255,255,0.7); }
+
+    /* ══ OPTION A ══════════════════════════════════════════ */
+    .option-a__body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 480px;
+    }
+
+    .option-a__left {
+      display: flex;
+      flex-direction: column;
+      padding: 32px 28px;
+      border-right: 1px solid rgba(255,255,255,0.07);
+      gap: 20px;
+    }
+
+    .player-block {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .player-photo {
+      width: 90px;
+      height: 110px;
+      border-radius: 14px;
+      background: linear-gradient(160deg, #1a2a40, #0d1826);
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.2);
+      font-size: 0.72rem;
+      flex-shrink: 0;
+    }
+
+    .player-info { display: flex; flex-direction: column; gap: 6px; }
+    .player-role { font-size: 0.78rem; color: rgba(255,255,255,0.45); letter-spacing: 0.08em; text-transform: uppercase; }
+    .player-name { font-family: 'Oswald', sans-serif; font-size: 1.9rem; font-weight: 700; line-height: 1; }
+    .player-base { font-size: 0.82rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+
+    /* YouTube PiP strip — Option A */
+    .yt-pip {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      position: relative;
+      background: #000;
+    }
+    .yt-pip__frame {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, #0a0f1a 0%, #111827 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .yt-pip__frame svg { width: 48px; height: 48px; opacity: 0.7; }
+    .yt-pip__label {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .yt-pip__badge {
+      position: absolute;
+      top: 8px; left: 8px;
+      background: #ff0000;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .option-a__right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 32px 28px;
+      gap: 16px;
+      background: linear-gradient(160deg, rgba(255,106,0,0.06), transparent 50%);
+    }
+
+    .bid-label { font-size: 0.78rem; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; text-transform: uppercase; }
+    .bid-amount { font-family: 'Oswald', sans-serif; font-size: clamp(2.8rem, 5vw, 4.2rem); font-weight: 700; color: #f7bf4f; line-height: 1; }
+    .bid-team {
+      display: flex; align-items: center; gap: 12px; margin-top: 8px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .team-logo {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, #3a8fff, #1a4fa0);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Oswald', sans-serif; font-size: 0.8rem; font-weight: 700;
+    }
+    .team-info p { font-size: 0.72rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em; }
+    .team-info strong { font-family: 'Oswald', sans-serif; font-size: 1.05rem; }
+
+    /* ══ OPTION B ══════════════════════════════════════════ */
+    .option-b__body {
+      position: relative;
+      min-height: 520px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* Full-screen background stream */
+    .yt-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #0a0f1a 0%, #060d18 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .yt-bg svg { width: 72px; height: 72px; opacity: 0.25; }
+    .yt-bg-text { font-size: 0.78rem; color: rgba(255,255,255,0.2); letter-spacing: 0.12em; text-transform: uppercase; }
+    .yt-bg__badge {
+      position: absolute;
+      top: 16px; left: 16px;
+      background: #ff0000;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      border-radius: 4px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* Dark gradient overlay so text stays readable */
+    .yt-bg__overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to right, rgba(5,11,20,0.72) 0%, rgba(5,11,20,0.4) 50%, rgba(5,11,20,0.72) 100%),
+        linear-gradient(to bottom, rgba(5,11,20,0.5) 0%, transparent 30%, transparent 70%, rgba(5,11,20,0.7) 100%);
+    }
+
+    /* Floating bid UI on top of stream background */
+    .option-b__left {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 40px 36px;
+      gap: 20px;
+    }
+
+    .option-b__right {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 40px 36px;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .glass-card {
+      background: rgba(5, 11, 20, 0.72);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 18px;
+      padding: 20px 22px;
+      width: 100%;
+    }
+
+    .overlay__footer {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      padding: 12px 28px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.03);
+    }
+    .overlay__footer span { font-size: 0.76rem; color: rgba(255,255,255,0.35); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* note box */
+    .note {
+      max-width: 1100px;
+      margin-top: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: rgba(247,191,79,0.07);
+      border: 1px solid rgba(247,191,79,0.18);
+      font-size: 0.84rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.6;
+    }
+    .note strong { color: #f7bf4f; }
+  </style>
+</head>
+<body>
+
+  <!-- ── OPTION A ─────────────────────────────────────── -->
+  <div class="section">
+    <h2>Option A</h2>
+    <div class="label label--a">● Picture-in-Picture Strip</div>
+    <div class="overlay">
+      <div class="overlay__topbar">
+        <div class="live-dot"></div>
+        <span>Live · Slot 3 · All-Rounder</span>
+        <strong>EPL Season 1 Auction</strong>
+      </div>
+      <div class="option-a__body">
+        <!-- Left: player info + YouTube PiP below -->
+        <div class="option-a__left">
+          <div class="player-block">
+            <div class="player-photo">Photo</div>
+            <div class="player-info">
+              <span class="player-role">All-Rounder · Slot 3</span>
+              <div class="player-name">Rahul Sharma</div>
+              <div class="player-base">Base Price: ₹1,000</div>
+            </div>
+          </div>
+          <!-- YouTube strip sits below player info -->
+          <div class="yt-pip">
+            <div class="yt-pip__frame">
+              <svg viewBox="0 0 90 63" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="90" height="63" rx="8" fill="#FF0000" opacity="0.9"/>
+                <polygon points="36,18 63,31.5 36,45" fill="white"/>
+              </svg>
+              <span class="yt-pip__label">Live stream playing here</span>
+            </div>
+            <div class="yt-pip__badge">● LIVE</div>
+          </div>
+        </div>
+        <!-- Right: bid data unchanged -->
+        <div class="option-a__right">
+          <div class="bid-label">Current Bid</div>
+          <div class="bid-amount">₹7,000</div>
+          <div class="bid-team">
+            <div class="team-logo">T1</div>
+            <div class="team-info">
+              <p>Leading</p>
+              <strong>Acharya XI</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="overlay__footer">
+        <span>Base ₹1,000</span>
+        <span>Slot 3 of 12</span>
+        <span>14 Sold · 30 Remaining</span>
+      </div>
+    </div>
+    <div class="note">
+      <strong>Option A:</strong> YouTube stream plays as a panel <strong>below the player photo</strong> on the left side. Bid amount and leading team remain the dominant visual. The stream is secondary — like a monitor showing the physical room. Clean separation between live data and live video.
+    </div>
+  </div>
+
+  <!-- ── OPTION B (revised) ──────────────────────────── -->
+  <div class="section">
+    <h2>Option B — Revised</h2>
+    <div class="label label--b">● Full Background + Bottom HUD Strip</div>
+    <div class="overlay" style="max-width:1100px;">
+      <div class="overlay__topbar">
+        <div class="live-dot"></div>
+        <span>Live · Slot 3 · All-Rounder</span>
+        <strong>EPL Season 1 Auction</strong>
+      </div>
+
+      <!-- Main body: stream takes almost all height -->
+      <div style="position:relative; min-height: 500px; display:flex; flex-direction:column; justify-content:flex-end;">
+
+        <!-- YouTube background -->
+        <div class="yt-bg" style="border-radius:0;">
+          <svg viewBox="0 0 90 63" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="90" height="63" rx="8" fill="#FF0000"/>
+            <polygon points="36,18 63,31.5 36,45" fill="white"/>
+          </svg>
+          <span class="yt-bg-text">Live stream fills entire background</span>
+          <div class="yt-bg__badge"><span style="width:7px;height:7px;border-radius:50%;background:white;display:inline-block"></span> LIVE</div>
+        </div>
+
+        <!-- Bottom fade so HUD strip reads cleanly -->
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom, transparent 40%, rgba(5,11,20,0.85) 100%);pointer-events:none;z-index:1;"></div>
+
+        <!-- ── HUD strip pinned to the bottom ── -->
+        <div style="
+          position: relative;
+          z-index: 2;
+          display: grid;
+          grid-template-columns: 1fr auto 1fr;
+          align-items: center;
+          gap: 0;
+          padding: 18px 28px 22px;
+        ">
+
+          <!-- Player info — left -->
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <span style="font-size:0.72rem;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:0.1em;">All-Rounder · Slot 3</span>
+            <span style="font-family:'Oswald',sans-serif;font-size:1.6rem;font-weight:700;line-height:1;">Rahul Sharma</span>
+            <span style="font-size:0.78rem;color:rgba(255,255,255,0.38);">Base Price: ₹1,000</span>
+          </div>
+
+          <!-- Current bid — centre dominant -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:0 40px;">
+            <span style="font-size:0.72rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.12em;">Current Bid</span>
+            <span style="font-family:'Oswald',sans-serif;font-size:3.2rem;font-weight:700;color:#f7bf4f;line-height:1;">₹7,000</span>
+          </div>
+
+          <!-- Leading team — right -->
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;">
+            <div style="text-align:right;">
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.1em;">Leading</div>
+              <div style="font-family:'Oswald',sans-serif;font-size:1.15rem;font-weight:700;">Acharya XI</div>
+            </div>
+            <div style="
+              width:46px;height:46px;border-radius:50%;
+              background:linear-gradient(135deg,#3a8fff,#1a4fa0);
+              display:flex;align-items:center;justify-content:center;
+              font-family:'Oswald',sans-serif;font-size:0.82rem;font-weight:700;
+              border:2px solid rgba(255,255,255,0.15);
+              flex-shrink:0;
+            ">T1</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="overlay__footer">
+        <span>Base ₹1,000</span>
+        <span>Slot 3 of 12</span>
+        <span>14 Sold · 30 Remaining</span>
+      </div>
+    </div>
+    <div class="note">
+      <strong>Option B (revised):</strong> Stream fills ~80% of the overlay. A dark bottom-fade gradient appears only at the base. All key data — player name, current bid, leading team — sits in a compact <strong>HUD strip pinned to the bottom</strong>. The bid amount stays centre-dominant. Nothing blocks the stream view.
+    </div>
+  </div>
+
+</body>
+</html>

@@ -72,9 +72,6 @@
         <div class="topbar__brand">
           <p class="eyebrow">Equality Premier League</p>
           <h1>Season 1 Auction Arena</h1>
-          <p class="topbar__subtitle">
-            Live auction floor for admin operations and public match-night viewing.
-          </p>
         </div>
         <div class="topbar__side">
           <div class="topbar__meta">
@@ -92,16 +89,15 @@
             </button>
           </div>
         </div>
+        <div class="topbar__sponsors" aria-label="Sponsors">
+          <span class="topbar__sponsors-label">Powered By</span>
+          <div class="sponsor-ribbon__window">
+            <div id="sponsor-track" class="sponsor-ribbon__track"></div>
+          </div>
+        </div>
       </header>
 
       <div id="auction-progress" class="auction-progress" aria-label="Auction progress"></div>
-
-      <section class="sponsor-ribbon" aria-label="Sponsors">
-        <div class="sponsor-ribbon__label">Powered By</div>
-        <div class="sponsor-ribbon__window">
-          <div id="sponsor-track" class="sponsor-ribbon__track"></div>
-        </div>
-      </section>
 
       <div id="flash-banner" class="flash-banner flash-banner--hidden" aria-live="polite"></div>
       <div id="celebration-layer" class="celebration-layer" aria-hidden="true"></div>
@@ -123,6 +119,11 @@
           <button id="prev-slot" class="button button--ghost" type="button">Previous Slot</button>
           <button id="next-slot" class="button button--ghost" type="button">Next Slot</button>
           <button id="reset-auction" class="button button--ghost" type="button" style="margin-left:auto;color:var(--signal);">Reset Auction</button>
+          <div class="yt-url-row">
+            <span class="yt-url-row__icon">▶</span>
+            <input id="youtube-url" class="yt-url-input" type="url"
+              placeholder="YouTube live URL — paste before going live" />
+          </div>
         </div>
       </section>
 
@@ -266,18 +267,9 @@
 
         <section id="public-view" class="view-panel">
           <div class="layout">
-            <section class="panel panel--wide">
-              <div id="public-live-card" class="public-stage"></div>
-            </section>
-
+            <!-- Row 1: Live card (1.2fr) + Recent Sales (0.8fr) side by side -->
             <section class="panel">
-              <div class="panel__header">
-                <div>
-                  <p class="eyebrow">Public Purse Board</p>
-                  <h2>Franchise Wallets</h2>
-                </div>
-              </div>
-              <div id="public-teams-grid" class="teams-grid"></div>
+              <div id="public-live-card" class="public-stage"></div>
             </section>
 
             <section class="panel">
@@ -288,6 +280,17 @@
                 </div>
               </div>
               <div id="public-sold-history" class="history-list"></div>
+            </section>
+
+            <!-- Row 2: Franchise Wallets — full width, 4-col horizontal -->
+            <section class="panel panel--wide">
+              <div class="panel__header">
+                <div>
+                  <p class="eyebrow">Public Purse Board</p>
+                  <h2>Franchise Wallets</h2>
+                </div>
+              </div>
+              <div id="public-teams-grid" class="teams-grid teams-grid--public"></div>
             </section>
 
             <section class="panel panel--wide">

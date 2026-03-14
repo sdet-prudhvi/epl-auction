@@ -59,13 +59,13 @@ const teams = [
 const branding = {
   leagueLogoPath: "/assets/branding/epl-logo.png",
   sponsors: [
-    { id: "lfbc", name: "LFBC", logoPath: "/assets/sponsors/01_LFBC.png" },
-    { id: "anu", name: "ANU", logoPath: "/assets/sponsors/02_ANU.png" },
-    { id: "ami", name: "AMI", logoPath: "/assets/sponsors/03_AMI.png" },
-    { id: "oka", name: "OKA", logoPath: "/assets/sponsors/04_OKA.png" },
-    { id: "bot", name: "BOT", logoPath: "/assets/sponsors/05_BOT.png" },
-    { id: "smile", name: "SMILE", logoPath: "/assets/sponsors/06_SMILE.png" },
-    { id: "mm", name: "MM", logoPath: "/assets/sponsors/07_MM.png" },
+    { id: "lfbc", name: "Live Free By Choice", logoPath: "/assets/sponsors/01_LFBC.png" },
+    { id: "anu", name: "Anu Beauty Clinic", logoPath: "/assets/sponsors/02_ANU.png" },
+    { id: "ami", name: "Amitha Developers", logoPath: "/assets/sponsors/03_AMI.png" },
+    { id: "oka", name: "OKA Resorts", logoPath: "/assets/sponsors/04_OKA.png" },
+    { id: "bot", name: "BOT9", logoPath: "/assets/sponsors/05_BOT.png" },
+    { id: "smile", name: "Smile Care", logoPath: "/assets/sponsors/06_SMILE.png" },
+    { id: "mm", name: "MM Fitness Zone", logoPath: "/assets/sponsors/07_MM.png" },
   ],
 };
 

@@ -90,11 +90,11 @@ select {
 
 .topbar {
   display: grid;
-  grid-template-columns: 180px minmax(0, 1fr) 280px;
-  gap: 24px;
+  grid-template-columns: 160px minmax(0, 1fr) 260px;
+  gap: 20px;
   align-items: center;
   margin-bottom: 18px;
-  padding: 28px 30px;
+  padding: 20px 26px;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 28px;
   background:
@@ -132,8 +132,8 @@ select {
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 152px;
-  padding: 14px;
+  min-height: 100px;
+  padding: 12px;
   border-radius: 28px;
   background:
     radial-gradient(circle at top, rgba(255, 108, 0, 0.34), transparent 56%),
@@ -155,7 +155,7 @@ select {
 }
 
 .topbar__crest {
-  width: min(100%, 136px);
+  width: min(100%, 96px);
   aspect-ratio: 1;
   object-fit: contain;
   filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.42));
@@ -1755,22 +1755,56 @@ select {
   z-index: 90;
   overflow: hidden;
   background: #050b14;
-  grid-template-rows: auto 1fr auto;
+  /* topbar at top, HUD pinned to bottom */
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .live-overlay--active {
-  display: grid;
+  display: flex;
 }
 
-/* Ambient glow shifts to leading team colour */
+/* Background: ambient glow OR YouTube iframe */
 .live-overlay__bg {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  overflow: hidden;
   transition: background 1.4s ease;
   background:
     radial-gradient(ellipse 55% 60% at 78% 50%, var(--team-glow, rgba(255, 106, 0, 0.18)), transparent),
     radial-gradient(ellipse 40% 50% at 18% 35%, rgba(255, 106, 0, 0.06), transparent);
+}
+
+/* YouTube iframe fills background like a cover photo */
+.live-overlay__yt-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* Ensures 16:9 video covers the whole overlay regardless of aspect ratio */
+  width: 100%;
+  height: 100%;
+  min-width: calc(177.78vh);
+  min-height: calc(56.25vw);
+  transform: translate(-50%, -50%);
+  border: none;
+  pointer-events: none;
+}
+
+/* Bottom gradient fade so HUD text reads over the stream */
+.live-overlay__yt-fade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(5, 11, 20, 0.35) 0%,
+    transparent 18%,
+    transparent 55%,
+    rgba(5, 11, 20, 0.8) 80%,
+    rgba(5, 11, 20, 0.95) 100%
+  );
 }
 
 .live-overlay[data-tc="1"] { --team-glow: rgba(40, 77, 131, 0.42); }
@@ -1830,8 +1864,50 @@ select {
   color: rgba(255, 255, 255, 0.88);
 }
 
+.live-overlay__topbar-sponsors {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+
+.live-overlay__topbar-sponsors-track {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  animation: topbar-sponsors-scroll 28s linear infinite;
+  width: max-content;
+}
+
+@keyframes topbar-sponsors-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.live-overlay__topbar-sponsor {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.live-overlay__topbar-sponsor img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
 .live-overlay__slot-info {
   margin-left: auto;
+  flex-shrink: 0;
   padding: 8px 18px;
   border-radius: 999px;
   background: rgba(247, 191, 79, 0.12);
@@ -1979,7 +2055,7 @@ select {
   font-weight: 700;
 }
 
-/* Footer stats */
+/* Footer stats — kept for legacy, not used in new HUD layout */
 .live-overlay__footer {
   display: flex;
   justify-content: center;
@@ -1997,7 +2073,139 @@ select {
   text-transform: uppercase;
 }
 
-/* Responsive: stack to single column on smaller screens */
+/* ── HUD strip — bottom bar over stream ──────────────────────── */
+.live-overlay__hud {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 0;
+  padding: 20px 40px 52px; /* 52px bottom lifts HUD ~2% off the edge */
+}
+
+.live-overlay__hud--new .live-overlay__hud-player {
+  animation: live-player-in 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.live-overlay__hud-player {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.live-overlay__hud-bid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 48px;
+}
+
+.live-overlay__hud-team {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.live-overlay__hud-label {
+  margin: 0;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.42);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.live-overlay__hud-name {
+  margin: 0;
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.live-overlay__hud-base {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.36);
+}
+
+.live-overlay__hud-amount {
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+  animation: bid-glow 2.2s ease infinite;
+}
+
+.live-overlay__hud-stats {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.live-overlay__hud-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.5));
+  flex-shrink: 0;
+}
+
+.live-overlay__hud-teamname {
+  margin: 0;
+  font-family: "Oswald", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── YouTube URL input in admin control strip ────────────────── */
+.yt-url-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.yt-url-row__icon {
+  color: #ff0000;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.yt-url-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  color: var(--ink);
+  padding: 9px 16px;
+  font-size: 0.84rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 200ms ease;
+}
+
+.yt-url-input::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.yt-url-input:focus {
+  border-color: rgba(255, 0, 0, 0.45);
+}
+
+/* Responsive: HUD strip on smaller screens */
 @media (max-width: 768px) {
   .live-overlay__topbar {
     padding: 12px 20px;
@@ -2008,39 +2216,30 @@ select {
     display: none;
   }
 
-  .live-overlay__stage {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
+  .live-overlay__hud {
+    padding: 14px 20px 36px;
+    gap: 8px;
   }
 
-  .live-overlay__player-side {
-    border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding: 20px;
+  .live-overlay__hud-bid {
+    padding: 0 20px;
   }
 
-  .live-overlay__bid-side {
-    padding: 20px;
+  .live-overlay__hud-amount {
+    font-size: clamp(2.2rem, 7vw, 3.6rem);
   }
 
-  .live-overlay__photo {
-    width: min(160px, 20vh);
-    height: min(160px, 20vh);
+  .live-overlay__hud-name {
+    font-size: clamp(1.1rem, 3.5vw, 1.8rem);
   }
 
-  .live-overlay__name {
-    font-size: clamp(1.8rem, 5vw, 2.8rem);
+  .live-overlay__hud-logo {
+    width: 38px;
+    height: 38px;
   }
 
-  .live-overlay__bid-amount {
-    font-size: clamp(2.8rem, 8vw, 4rem);
-  }
-
-  .live-overlay__footer {
-    gap: 20px;
-    padding: 10px 20px;
-    flex-wrap: wrap;
-    justify-content: center;
+  .live-overlay__hud-teamname {
+    font-size: 1rem;
   }
 }
 
@@ -2648,6 +2847,74 @@ select {
     -webkit-overflow-scrolling: touch;
     /* subtle right-edge fade hint that more items exist */
     mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  }
+}
+
+/* ── Sponsor row embedded inside topbar ──────────────────────── */
+.topbar__sponsors {
+  grid-column: 1 / -1;           /* span all 3 topbar columns */
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.topbar__sponsors-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffe3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.topbar__sponsors:hover .sponsor-ribbon__track {
+  animation-play-state: paused;
+}
+
+/* ── Public Franchise Wallets: 4-column horizontal layout ─────── */
+.teams-grid--public {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 960px) {
+  .teams-grid--public {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Sponsor row: hide label to save space */
+  .topbar__sponsors {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar__sponsors-label {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  /* Stop sponsor animation; enable touch scroll inside topbar too */
+  .topbar__sponsors .sponsor-ribbon__track {
+    animation: none;
+  }
+
+  .topbar__sponsors .sponsor-ribbon__window {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  }
+}
+
+@media (max-width: 480px) {
+  .teams-grid--public {
+    grid-template-columns: 1fr 1fr;
   }
 }
 

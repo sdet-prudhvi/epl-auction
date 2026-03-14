@@ -7,6 +7,7 @@ const uiState = {
   lastBidEventKey: null,
   bidFlashTeamId: null,
   token: localStorage.getItem("auction_token") || null,
+  youtubeUrl: localStorage.getItem("epl_yt_url") || "",
 };
 
 let snapshot = null;
@@ -36,6 +37,7 @@ const adminRosterBody = document.querySelector("#admin-roster-body");
 const publicRosterBody = document.querySelector("#public-roster-body");
 const publicLiveCard = document.querySelector("#public-live-card");
 const liveOverlay = document.querySelector("#live-overlay");
+const youtubeInput = document.querySelector("#youtube-url");
 const soldMoment = document.querySelector("#sold-moment");
 const flashBanner = document.querySelector("#flash-banner");
 const celebrationLayer = document.querySelector("#celebration-layer");
@@ -751,9 +753,6 @@ function renderPublicLiveCard() {
       <div>
         <p class="eyebrow">Public Auction Board</p>
         <h2>${activeSlot.label} · ${activeSlot.role}</h2>
-        <p class="public-stage__copy">
-          Purse board and sold history stay visible to everyone during the live auction, with players auto-revealed slot by slot.
-        </p>
       </div>
       <div class="public-stage__score">
         <img class="public-stage__logo" src="${snapshot.league.logoPath}" alt="${snapshot.league.name} logo" />
@@ -767,6 +766,19 @@ function renderPublicLiveCard() {
       <span class="mini-pill">${snapshot.meta.lockedPlayerCount} owner slots locked before auction</span>
     </div>
   `;
+}
+
+function getYouTubeEmbedUrl(input) {
+  if (!input) return null;
+  if (input.includes("youtube.com/embed/")) return input;
+  const watchMatch = input.match(/[?&]v=([^&]+)/);
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1&mute=1`;
+  const shortMatch = input.match(/youtu\.be\/([^?]+)/);
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1&mute=1`;
+  const liveMatch = input.match(/youtube\.com\/live\/([^?]+)/);
+  if (liveMatch) return `https://www.youtube.com/embed/${liveMatch[1]}?autoplay=1&mute=1`;
+  if (/^[a-zA-Z0-9_-]{11}$/.test(input)) return `https://www.youtube.com/embed/${input}?autoplay=1&mute=1`;
+  return null;
 }
 
 function renderLiveMode() {
@@ -796,36 +808,36 @@ function renderLiveMode() {
   liveOverlay.dataset.tc = teamColorIndex || "";
   liveOverlay.classList.toggle("live-overlay--new-player", playerChanged);
 
-  const playerSection = nominatedPlayer
-    ? `<img
-        class="live-overlay__photo"
-        src="${nominatedPlayer.photoPath || "/assets/players/default.svg"}"
-        alt="${nominatedPlayer.name}"
-      />
-      <div class="live-overlay__player-info">
-        <p class="live-overlay__role">${nominatedPlayer.roleLabel} · ${activeSlot?.label ?? ""}</p>
-        <h1 class="live-overlay__name">${nominatedPlayer.name}</h1>
-        <p class="live-overlay__base">Base Price: ${formatPoints(snapshot.settings.basePrice)}</p>
-      </div>`
-    : `<div class="live-overlay__player-info">
-        <p class="live-overlay__role">${activeSlot?.label ?? ""} · ${activeSlot?.role ?? ""}</p>
-        <h1 class="live-overlay__name">Awaiting Nomination</h1>
-        <p class="live-overlay__base">Base Price: ${formatPoints(snapshot.settings.basePrice)}</p>
-      </div>`;
+  const embedUrl = getYouTubeEmbedUrl(uiState.youtubeUrl);
 
-  const teamSection = leadingTeam
-    ? `<div class="live-overlay__leading-team">
-        <img class="live-overlay__team-logo" src="${leadingTeam.logoPath}" alt="${leadingTeam.name}" />
-        <p class="live-overlay__team-name">${leadingTeam.name}</p>
-        <p class="live-overlay__leading-label">● Leading</p>
+  const playerName = nominatedPlayer?.name ?? "Awaiting Nomination";
+  const playerRole = nominatedPlayer
+    ? `${nominatedPlayer.roleLabel} · ${activeSlot?.label ?? ""}`
+    : `${activeSlot?.label ?? ""} · ${activeSlot?.role ?? ""}`;
+
+  const teamHud = leadingTeam
+    ? `<div class="live-overlay__hud-team">
+        <img class="live-overlay__hud-logo" src="${leadingTeam.logoPath}" alt="${leadingTeam.name}" />
+        <div>
+          <p class="live-overlay__hud-label">Leading</p>
+          <p class="live-overlay__hud-teamname">${leadingTeam.name}</p>
+        </div>
       </div>`
-    : `<div class="live-overlay__leading-team">
-        <p class="live-overlay__team-name" style="color:var(--ink-soft)">Open for Bids</p>
-        <p class="live-overlay__leading-label" style="color:var(--ink-soft)">No bid recorded</p>
+    : `<div class="live-overlay__hud-team">
+        <div>
+          <p class="live-overlay__hud-label">Leading</p>
+          <p class="live-overlay__hud-teamname" style="color:rgba(255,255,255,0.4)">Open for Bids</p>
+        </div>
       </div>`;
 
   liveOverlay.innerHTML = `
-    <div class="live-overlay__bg" aria-hidden="true"></div>
+    <div class="live-overlay__bg" aria-hidden="true">
+      ${embedUrl
+        ? `<iframe class="live-overlay__yt-frame" src="${embedUrl}" frameborder="0"
+             allow="autoplay; encrypted-media" allowfullscreen></iframe>`
+        : ""}
+    </div>
+    <div class="live-overlay__yt-fade" aria-hidden="true"></div>
     <div class="live-overlay__topbar">
       <div class="live-badge">
         <span class="live-badge__dot"></span>
@@ -833,20 +845,30 @@ function renderLiveMode() {
       </div>
       <img class="live-overlay__league-logo" src="${snapshot.league.logoPath}" alt="${snapshot.league.name}" />
       <span class="live-overlay__league-name">${snapshot.league.name} · ${snapshot.league.seasonName}</span>
+      <div class="live-overlay__topbar-sponsors">
+        <div class="live-overlay__topbar-sponsors-track">
+          ${(snapshot.settings?.sponsors ?? []).map(s =>
+            `<span class="live-overlay__topbar-sponsor"><img src="${s.logoPath}" alt="${s.name}" />${s.name}</span>`
+          ).join("")}
+          ${(snapshot.settings?.sponsors ?? []).map(s =>
+            `<span class="live-overlay__topbar-sponsor" aria-hidden="true"><img src="${s.logoPath}" alt="" />${s.name}</span>`
+          ).join("")}
+        </div>
+      </div>
       <div class="live-overlay__slot-info">${activeSlot?.label ?? ""} · ${activeSlot?.role ?? ""}</div>
     </div>
-    <div class="live-overlay__stage">
-      <div class="live-overlay__player-side">${playerSection}</div>
-      <div class="live-overlay__bid-side">
-        <p class="live-overlay__bid-label">Current Bid</p>
-        <div class="live-overlay__bid-amount">${formatPoints(snapshot.auctionState.currentBid || snapshot.settings.basePrice)}</div>
-        ${teamSection}
+    <div class="live-overlay__hud ${nominatedPlayer && playerChanged ? "live-overlay__hud--new" : ""}">
+      <div class="live-overlay__hud-player">
+        <p class="live-overlay__hud-label">${playerRole}</p>
+        <h1 class="live-overlay__hud-name">${playerName}</h1>
+        <p class="live-overlay__hud-base">Base ${formatPoints(snapshot.settings.basePrice)}</p>
       </div>
-    </div>
-    <div class="live-overlay__footer">
-      <span>Base ${formatPoints(snapshot.settings.basePrice)}</span>
-      <span>Slot ${snapshot.auctionState.currentSlotNumber} of ${snapshot.slots.length}</span>
-      <span>${soldTotal} Sold · ${snapshot.meta.totalPlayers - soldTotal} Remaining</span>
+      <div class="live-overlay__hud-bid">
+        <p class="live-overlay__hud-label">Current Bid</p>
+        <div class="live-overlay__hud-amount">${formatPoints(snapshot.auctionState.currentBid || snapshot.settings.basePrice)}</div>
+        <p class="live-overlay__hud-stats">${soldTotal} Sold · Slot ${snapshot.auctionState.currentSlotNumber}/${snapshot.slots.length}</p>
+      </div>
+      ${teamHud}
     </div>
   `;
 }
@@ -1246,6 +1268,14 @@ viewButtons.forEach((button) => {
     render();
   });
 });
+
+if (youtubeInput) {
+  youtubeInput.value = uiState.youtubeUrl;
+  youtubeInput.addEventListener("input", () => {
+    uiState.youtubeUrl = youtubeInput.value.trim();
+    localStorage.setItem("epl_yt_url", uiState.youtubeUrl);
+  });
+}
 
 toggleLiveButton.addEventListener("click", () => {
   performAction("toggle-live");
