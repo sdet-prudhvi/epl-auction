@@ -343,6 +343,7 @@ select {
 .ticker-window {
   overflow: hidden;
   min-height: 28px;
+  min-width: 0; /* prevent grid blowout on narrow viewports */
 }
 
 .ticker-track {
@@ -2324,6 +2325,11 @@ select {
     align-items: stretch;
   }
 
+  /* Stack stat cards above action buttons — fixes overlap/clip at 768-800px */
+  .control-strip {
+    flex-direction: column;
+  }
+
   .topbar__side {
     width: 100%;
     justify-items: stretch;
@@ -2536,16 +2542,16 @@ select {
     height: 88px;
   }
 
-  /* Phase 1: Roster table — show only Name / Status / Amount */
+  /* Phase 1: Roster table — keep Role+Team visible, trust horizontal scroll */
   .roster-table th:nth-child(2),
   .roster-table td:nth-child(2),
   .roster-table th:nth-child(4),
   .roster-table td:nth-child(4) {
-    display: none;
+    display: table-cell; /* restore columns hidden at >480px rule */
   }
 
   .roster-table {
-    min-width: 300px;
+    min-width: 480px; /* fits 5 cols; wrapper overflow-x:auto handles scroll */
   }
 
   .roster-table th,
@@ -2625,5 +2631,34 @@ select {
 
   .auction-progress {
     padding: 6px 14px;
+  }
+}
+
+/* ─── Fix 6: Sponsor carousel — swipeable on phones ≤680px ──── */
+@media (max-width: 680px) {
+  /* Stop auto-scroll; enable touch swipe so all logos are reachable */
+  .sponsor-ribbon__track {
+    animation: none;
+    flex-wrap: nowrap;
+  }
+
+  .sponsor-ribbon__window {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    /* subtle right-edge fade hint that more items exist */
+    mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  }
+}
+
+/* ─── Fix 7: Header logo compact on phones ≤480px ───────────── */
+@media (max-width: 480px) {
+  .topbar__crest-shell {
+    min-height: 72px;
+    padding: 8px;
+  }
+
+  .topbar__crest {
+    width: min(100%, 56px);
   }
 }
