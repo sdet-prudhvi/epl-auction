@@ -2479,3 +2479,151 @@ select {
     width: min(88vw, 320px);
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVENESS — Phases 1 / 2 / 3
+   ══════════════════════════════════════════════════════════════ */
+
+/* ─── Phase 1: Roster table at ≤680px ───────────────────────── */
+@media (max-width: 680px) {
+  /* Hide Position column — rarely actionable on mobile */
+  .roster-table th:nth-child(5),
+  .roster-table td:nth-child(5) {
+    display: none;
+  }
+
+  .roster-table {
+    min-width: 540px;
+  }
+
+  .roster-table th,
+  .roster-table td {
+    padding: 10px 12px;
+  }
+
+  /* Phase 2: Minimum tap target on all buttons */
+  .button {
+    min-height: 44px;
+  }
+}
+
+/* ─── Phase 1 + 2 + 3: Sub-480px — very small phones ─────────
+   Targets: iPhone SE (375px), Galaxy A (360px), small Androids
+   ──────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  /* Tighter page margins */
+  .page-shell {
+    width: min(100% - 16px, 1240px);
+    padding-top: 14px;
+  }
+
+  .topbar,
+  .panel {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  /* Phase 1: Restore side-by-side photo + info on narrow phones
+     (overrides the 680px "1fr" collapse back to compact grid) */
+  .stage-card--player {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+
+  .stage-card__photo {
+    width: 72px;
+    height: 88px;
+  }
+
+  /* Phase 1: Roster table — show only Name / Status / Amount */
+  .roster-table th:nth-child(2),
+  .roster-table td:nth-child(2),
+  .roster-table th:nth-child(4),
+  .roster-table td:nth-child(4) {
+    display: none;
+  }
+
+  .roster-table {
+    min-width: 300px;
+  }
+
+  .roster-table th,
+  .roster-table td {
+    padding: 8px 10px;
+  }
+
+  /* Phase 2: 2-column team / player cards instead of single column */
+  .teams-grid,
+  .player-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Phase 2: Summary cards — keep 2-col (override the 680px 1-col) */
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Phase 2: Tighter slot chips */
+  .slot-chip {
+    padding: 6px 8px;
+  }
+
+  .slot-chip span {
+    font-size: 0.78rem;
+  }
+
+  /* Phase 3: Hide ticker label to maximise track width */
+  .ticker-shell__label {
+    display: none;
+  }
+
+  /* Phase 3: View switch — smaller text to prevent truncation */
+  .view-switch__button {
+    font-size: 0.82rem;
+    padding: 8px 10px;
+  }
+
+  /* Phase 3: Sold moment overlay scaled for small screens */
+  .sold-moment__photo {
+    width: min(160px, 38vw);
+    height: min(200px, 46vw);
+    border-radius: 16px;
+  }
+
+  .sold-moment__stamp {
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    padding: 4px 12px;
+    border-width: 3px;
+  }
+
+  .sold-moment__team-name {
+    font-size: clamp(1rem, 3.5vw, 1.6rem);
+  }
+}
+
+/* ─── Phase 2: Landscape orientation on phones ───────────────── */
+@media (max-height: 500px) and (max-width: 900px) {
+  .topbar {
+    padding: 10px 16px;
+    border-radius: 14px;
+  }
+
+  .topbar__crest-shell {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .topbar__crest {
+    display: none;
+  }
+
+  .topbar h1 {
+    font-size: 1.4rem;
+  }
+
+  .auction-progress {
+    padding: 6px 14px;
+  }
+}
