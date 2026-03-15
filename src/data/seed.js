@@ -66,6 +66,8 @@ const branding = {
     { id: "bot", name: "BOT9", logoPath: "/assets/sponsors/05_BOT.png" },
     { id: "smile", name: "Smile Care", logoPath: "/assets/sponsors/06_SMILE.png" },
     { id: "mm", name: "MM Fitness Zone", logoPath: "/assets/sponsors/07_MM.png" },
+    { id: "kska", name: "KSKA", logoPath: "/assets/sponsors/08_KSKA.png" },
+    { id: "mhmc", name: "My Health My Care", logoPath: "/assets/sponsors/09_MHMC.png" },
   ],
 };
 
