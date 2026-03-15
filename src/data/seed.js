@@ -168,7 +168,7 @@ const players = draftPlayers.map((player, index) => ({
   roleLabel: roleConfig[player.roleKey].roleLabel,
   eligibleSlotNumbers: [player.dedicatedSlotNumber],
   eligibilityLabel: `Position ${player.dedicatedSlotNumber}`,
-  basePrice: 3000,
+  basePrice: 2000,
   status: "Pending",
   soldToTeamId: null,
   soldAmount: null,
