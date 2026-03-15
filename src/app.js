@@ -770,6 +770,9 @@ function renderPublicLiveCard() {
 
 function getYouTubeEmbedUrl(input) {
   if (!input) return null;
+  // Full iframe embed code — extract src attribute
+  const iframeMatch = input.match(/src="([^"]*youtube\.com\/embed\/[^"]*)"/);
+  if (iframeMatch) return iframeMatch[1];
   if (input.includes("youtube.com/embed/")) return input;
   const watchMatch = input.match(/[?&]v=([^&]+)/);
   if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1&mute=1`;
