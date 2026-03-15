@@ -770,17 +770,17 @@ function renderPublicLiveCard() {
 
 function getYouTubeEmbedUrl(input) {
   if (!input) return null;
-  // Full iframe embed code — extract src attribute
-  const iframeMatch = input.match(/src="([^"]*youtube\.com\/embed\/[^"]*)"/);
-  if (iframeMatch) return iframeMatch[1];
-  if (input.includes("youtube.com/embed/")) return input;
-  const watchMatch = input.match(/[?&]v=([^&]+)/);
+  // Extract video ID from any format, then always build a clean embed URL
+  // Full iframe embed code — extract video ID from src
+  const iframeMatch = input.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+  if (iframeMatch) return `https://www.youtube.com/embed/${iframeMatch[1]}?autoplay=1&mute=1`;
+  const watchMatch = input.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
   if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?autoplay=1&mute=1`;
-  const shortMatch = input.match(/youtu\.be\/([^?]+)/);
+  const shortMatch = input.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
   if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1&mute=1`;
-  const liveMatch = input.match(/youtube\.com\/live\/([^?]+)/);
+  const liveMatch = input.match(/youtube\.com\/live\/([a-zA-Z0-9_-]{11})/);
   if (liveMatch) return `https://www.youtube.com/embed/${liveMatch[1]}?autoplay=1&mute=1`;
-  if (/^[a-zA-Z0-9_-]{11}$/.test(input)) return `https://www.youtube.com/embed/${input}?autoplay=1&mute=1`;
+  if (/^[a-zA-Z0-9_-]{11}$/.test(input.trim())) return `https://www.youtube.com/embed/${input.trim()}?autoplay=1&mute=1`;
   return null;
 }
 
@@ -833,33 +833,7 @@ function renderLiveMode() {
         </div>
       </div>`;
 
-  liveOverlay.innerHTML = `
-    <div class="live-overlay__bg" aria-hidden="true">
-      ${embedUrl
-        ? `<iframe class="live-overlay__yt-frame" src="${embedUrl}" frameborder="0"
-             allow="autoplay; encrypted-media" allowfullscreen></iframe>`
-        : ""}
-    </div>
-    <div class="live-overlay__yt-fade" aria-hidden="true"></div>
-    <div class="live-overlay__topbar">
-      <div class="live-badge">
-        <span class="live-badge__dot"></span>
-        Live
-      </div>
-      <img class="live-overlay__league-logo" src="${snapshot.league.logoPath}" alt="${snapshot.league.name}" />
-      <span class="live-overlay__league-name">${snapshot.league.name} · ${snapshot.league.seasonName}</span>
-      <div class="live-overlay__topbar-sponsors">
-        <div class="live-overlay__topbar-sponsors-track">
-          ${(snapshot.settings?.sponsors ?? []).map(s =>
-            `<span class="live-overlay__topbar-sponsor"><img src="${s.logoPath}" alt="${s.name}" />${s.name}</span>`
-          ).join("")}
-          ${(snapshot.settings?.sponsors ?? []).map(s =>
-            `<span class="live-overlay__topbar-sponsor" aria-hidden="true"><img src="${s.logoPath}" alt="" />${s.name}</span>`
-          ).join("")}
-        </div>
-      </div>
-      <div class="live-overlay__slot-info">${activeSlot?.label ?? ""} · ${activeSlot?.role ?? ""}</div>
-    </div>
+  const hudHTML = `
     <div class="live-overlay__hud ${nominatedPlayer && playerChanged ? "live-overlay__hud--new" : ""}">
       <div class="live-overlay__hud-player">
         ${nominatedPlayer?.photoPath
@@ -877,6 +851,54 @@ function renderLiveMode() {
       ${teamHud}
     </div>
   `;
+
+  // Only rebuild the full overlay (including iframe) when the embed URL changes.
+  // Otherwise just update the HUD to avoid reloading the YouTube stream on every bid.
+  const existingFrame = liveOverlay.querySelector('.live-overlay__yt-frame');
+  const existingSrc = existingFrame?.getAttribute('src') || '';
+
+  if (!liveOverlay.querySelector('.live-overlay__bg') || existingSrc !== (embedUrl || '')) {
+    liveOverlay.innerHTML = `
+      <div class="live-overlay__bg" aria-hidden="true">
+        ${embedUrl
+          ? `<iframe class="live-overlay__yt-frame" src="${embedUrl}" frameborder="0"
+               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+               allowfullscreen></iframe>`
+          : ""}
+      </div>
+      <div class="live-overlay__yt-fade" aria-hidden="true"></div>
+      <div class="live-overlay__topbar">
+        <div class="live-badge">
+          <span class="live-badge__dot"></span>
+          Live
+        </div>
+        <img class="live-overlay__league-logo" src="${snapshot.league.logoPath}" alt="${snapshot.league.name}" />
+        <span class="live-overlay__league-name">${snapshot.league.name} · ${snapshot.league.seasonName}</span>
+        <div class="live-overlay__topbar-sponsors">
+          <div class="live-overlay__topbar-sponsors-track">
+            ${(snapshot.settings?.sponsors ?? []).map(s =>
+              `<span class="live-overlay__topbar-sponsor"><img src="${s.logoPath}" alt="${s.name}" />${s.name}</span>`
+            ).join("")}
+            ${(snapshot.settings?.sponsors ?? []).map(s =>
+              `<span class="live-overlay__topbar-sponsor" aria-hidden="true"><img src="${s.logoPath}" alt="" />${s.name}</span>`
+            ).join("")}
+          </div>
+        </div>
+        <div class="live-overlay__slot-info">${activeSlot?.label ?? ""} · ${activeSlot?.role ?? ""}</div>
+      </div>
+      ${hudHTML}
+    `;
+  } else {
+    // Iframe is stable — only update the HUD
+    const existingHud = liveOverlay.querySelector('.live-overlay__hud');
+    if (existingHud) {
+      existingHud.outerHTML = hudHTML;
+    } else {
+      liveOverlay.insertAdjacentHTML('beforeend', hudHTML);
+    }
+    const slotInfo = liveOverlay.querySelector('.live-overlay__slot-info');
+    if (slotInfo) slotInfo.textContent = `${activeSlot?.label ?? ""} · ${activeSlot?.role ?? ""}`;
+  }
 }
 
 function renderTeamCards(container, interactive) {
