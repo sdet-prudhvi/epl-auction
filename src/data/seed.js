@@ -16,7 +16,7 @@ const slotTemplate = [
 const teams = [
   {
     id: "gowtham-xis",
-    name: "Gowtham XI's",
+    name: "GOWTHAM'S XI",
     code: "GXI",
     owner: "Draft team",
     logoPath: "/assets/branding/gowtham-logo.png",
@@ -26,7 +26,7 @@ const teams = [
   },
   {
     id: "rahul-xis",
-    name: "Rahul XI's",
+    name: "RAHUL'S XI",
     code: "RXI",
     owner: "Draft team",
     logoPath: "/assets/branding/rahul-logo.png",
@@ -36,7 +36,7 @@ const teams = [
   },
   {
     id: "sunil-xis",
-    name: "Sunil XI's",
+    name: "SUNIL'S XI",
     code: "SXI",
     owner: "Draft team",
     logoPath: "/assets/branding/sunil-logo.png",
@@ -46,7 +46,7 @@ const teams = [
   },
   {
     id: "acharya-xis",
-    name: "Acharya XI'S",
+    name: "ACHARYA'S XI",
     code: "AXI",
     owner: "Draft team",
     logoPath: "/assets/branding/acharya-logo.png",
