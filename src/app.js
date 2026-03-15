@@ -859,6 +859,9 @@ function renderLiveMode() {
     </div>
     <div class="live-overlay__hud ${nominatedPlayer && playerChanged ? "live-overlay__hud--new" : ""}">
       <div class="live-overlay__hud-player">
+        ${nominatedPlayer?.photoPath
+          ? `<img class="live-overlay__hud-photo" src="${nominatedPlayer.photoPath}" alt="${playerName}" />`
+          : ""}
         <p class="live-overlay__hud-label">${playerRole}</p>
         <h1 class="live-overlay__hud-name">${playerName}</h1>
         <p class="live-overlay__hud-base">Base ${formatPoints(snapshot.settings.basePrice)}</p>

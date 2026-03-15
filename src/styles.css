@@ -2091,7 +2091,21 @@ select {
 .live-overlay__hud-player {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 4px;
+  width: fit-content;
+}
+
+.live-overlay__hud-photo {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  margin-bottom: 6px;
+  flex-shrink: 0;
 }
 
 .live-overlay__hud-bid {
@@ -2240,6 +2254,11 @@ select {
 
   .live-overlay__hud-teamname {
     font-size: 1rem;
+  }
+
+  .live-overlay__hud-photo {
+    width: 64px;
+    height: 64px;
   }
 }
 
