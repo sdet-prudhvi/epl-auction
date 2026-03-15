@@ -117,6 +117,10 @@ select {
 
 .topbar__brand {
   max-width: 620px;
+  padding-left: 20px;
+  border-left: 3px solid var(--gold);
+  position: relative;
+  z-index: 1;
 }
 
 .sse-disconnected .topbar {
@@ -169,21 +173,28 @@ select {
   z-index: 1;
 }
 
-.topbar h1 {
-  margin-top: 8px;
-  font-family: "Oswald", sans-serif;
-  font-size: clamp(2.4rem, 4vw, 4rem);
-  line-height: 0.95;
-  letter-spacing: 0.04em;
+.topbar__eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  text-shadow: 0 0 24px rgba(255, 106, 0, 0.16);
+  color: var(--gold);
+  opacity: 0.9;
 }
 
-.topbar__subtitle {
-  margin-top: 12px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 1.02rem;
-  max-width: 54ch;
+.topbar h1 {
+  margin: 0;
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(1.55rem, 2.2vw, 2.2rem);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: linear-gradient(160deg, #ffffff 30%, rgba(255, 230, 180, 0.82) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .topbar__side {
@@ -581,6 +592,33 @@ select {
 
 .panel__header--compact {
   margin-bottom: 8px;
+}
+
+.btn--ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.btn--sm {
+  padding: 6px 12px;
+  font-size: 0.78rem;
 }
 
 .panel__header h2,

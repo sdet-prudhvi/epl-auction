@@ -1103,6 +1103,37 @@ function renderSquadBoard(container) {
     .join("");
 }
 
+function exportSquadCSV() {
+  if (!snapshot) return;
+
+  const rows = [["Team", "Slot", "Position", "Player", "Role", "Status", "Sold Price"]];
+
+  snapshot.teams.forEach((team) => {
+    snapshot.slots.forEach((slot) => {
+      const player = getTeamSlotPlayer(team.id, slot.slotNumber);
+      if (player) {
+        const price = player.status === "Locked"
+          ? "Offline Fixed"
+          : player.soldAmount
+            ? player.soldAmount
+            : "";
+        rows.push([team.name, slot.label, slot.role, player.name, player.roleLabel, player.status, price]);
+      } else {
+        rows.push([team.name, slot.label, slot.role, "Open", "", "", ""]);
+      }
+    });
+  });
+
+  const csv = rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `EPL-Squad-Report-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function renderRosterTable(body) {
   if (!snapshot) {
     body.innerHTML = "";
@@ -1305,6 +1336,8 @@ sellPlayerButton.addEventListener("click", () => {
 undoSaleButton.addEventListener("click", () => {
   performAction("reopen-last-sold");
 });
+
+document.querySelector("#export-squad-btn").addEventListener("click", exportSquadCSV);
 
 document.querySelector("#reset-auction").addEventListener("click", async () => {
   const confirmed = window.confirm(
