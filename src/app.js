@@ -1576,6 +1576,24 @@ function renderHomePage() {
         ${renderFixtureCards()}
       </div>
     </section>
+
+    <section class="home-sponsors">
+      <div class="home-sponsors__group">
+        <span class="home-sponsors__label">Title Sponsor</span>
+        <div class="home-sponsors__logos">
+          <img src="/assets/sponsors/01_LFBC.png" alt="Live Free By Choice" />
+        </div>
+      </div>
+      <div class="home-sponsors__divider" aria-hidden="true"></div>
+      <div class="home-sponsors__group">
+        <span class="home-sponsors__label">Premier Partners</span>
+        <div class="home-sponsors__logos">
+          <img src="/assets/sponsors/04_OKA.png" alt="OKA Resorts" />
+          <img src="/assets/sponsors/03_AMI.png" alt="Amitha Developers" />
+          <img src="/assets/sponsors/07_MM.png" alt="MM Fitness Zone" />
+        </div>
+      </div>
+    </section>
   `;
 }
 
