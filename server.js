@@ -133,6 +133,12 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "GET" && pathname === "/squads.html") {
+    res.writeHead(301, { Location: "/season/1/squads" });
+    res.end();
+    return;
+  }
+
   if (req.method === "POST" && pathname === "/api/login") {
     const body = await readBody(req);
     if (body.username === ADMIN_USERNAME && body.password === ADMIN_PASSWORD) {

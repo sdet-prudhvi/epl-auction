@@ -8,7 +8,81 @@ const uiState = {
   bidFlashTeamId: null,
   token: localStorage.getItem("auction_token") || null,
   youtubeUrl: localStorage.getItem("epl_yt_url") || "",
+  route: null,
 };
+
+const SEASON_NUMBER = 1;
+const SEASON_BASE = `/season/${SEASON_NUMBER}`;
+const SEASON_FIXTURES = [
+  {
+    dayLabel: "Saturday Apr 11",
+    matches: [
+      {
+        label: "AM Match",
+        home: "GOWTHAM'S XI",
+        away: "SUNIL'S XI",
+        status: "Scheduled",
+      },
+      {
+        label: "PM Match",
+        home: "ACHARYA'S XI",
+        away: "RAHUL'S XI",
+        status: "Scheduled",
+      },
+    ],
+  },
+  {
+    dayLabel: "Sunday Apr 19",
+    matches: [
+      {
+        label: "AM Match",
+        home: "GOWTHAM'S XI",
+        away: "ACHARYA'S XI",
+        status: "Scheduled",
+      },
+      {
+        label: "PM Match",
+        home: "SUNIL'S XI",
+        away: "RAHUL'S XI",
+        status: "Scheduled",
+      },
+    ],
+  },
+  {
+    dayLabel: "Saturday Apr 25",
+    matches: [
+      {
+        label: "AM Match",
+        home: "GOWTHAM'S XI",
+        away: "RAHUL'S XI",
+        status: "Scheduled",
+      },
+      {
+        label: "PM Match",
+        home: "SUNIL'S XI",
+        away: "ACHARYA'S XI",
+        status: "Scheduled",
+      },
+    ],
+  },
+  {
+    dayLabel: "Sunday Apr 26",
+    matches: [
+      {
+        label: "Final AM Match",
+        home: "TBD",
+        away: "TBD",
+        status: "TBD",
+      },
+      {
+        label: "Friendly PM Match",
+        home: "TBD",
+        away: "TBD",
+        status: "May be played",
+      },
+    ],
+  },
+];
 
 let snapshot = null;
 let noticeTimeoutId = null;
@@ -20,6 +94,8 @@ let adminLastNominatedId = null;
 let liveModeLastNominatedId = null;
 
 const auctionProgress = document.querySelector("#auction-progress");
+const seasonPage = document.querySelector("#season-page");
+const auctionShell = document.querySelector("#auction-shell");
 const summaryCards = document.querySelector("#summary-cards");
 const slotTimeline = document.querySelector("#slot-timeline");
 const activeSlotCard = document.querySelector("#active-slot-card");
@@ -48,6 +124,7 @@ const adminView = document.querySelector("#admin-view");
 const publicView = document.querySelector("#public-view");
 const adminActions = document.querySelector("#admin-actions");
 const viewButtons = document.querySelectorAll("[data-view]");
+const routeLinks = document.querySelectorAll(".league-nav [data-route-link]");
 
 const toggleLiveButton = document.querySelector("#toggle-live");
 const prevSlotButton = document.querySelector("#prev-slot");
@@ -58,6 +135,93 @@ const bidStepButtons = document.querySelectorAll(".bid-step");
 
 function formatPoints(value) {
   return Number(value || 0).toLocaleString();
+}
+
+function slugify(value) {
+  return String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function getTeamSlug(team) {
+  return slugify(team.name.replace(/xi'?s?/gi, ""));
+}
+
+function getTeamBySlug(teamSlug) {
+  return snapshot?.teams.find((team) => getTeamSlug(team) === teamSlug) ?? null;
+}
+
+function buildSeasonPath(segment = "", detail = "") {
+  const parts = [SEASON_BASE];
+  if (segment) {
+    parts.push(segment);
+  }
+  if (detail) {
+    parts.push(detail);
+  }
+  return parts.join("/").replace(/\/+/g, "/");
+}
+
+function parseRoute(pathname = window.location.pathname) {
+  const cleanPath = pathname.replace(/\/+$/, "") || "/";
+
+  if (cleanPath === "/" || cleanPath === "/index.html") {
+    return { name: "home", path: buildSeasonPath() };
+  }
+
+  if (cleanPath === SEASON_BASE) {
+    return { name: "home", path: cleanPath };
+  }
+
+  if (cleanPath === buildSeasonPath("teams")) {
+    return { name: "teams", path: cleanPath };
+  }
+
+  if (cleanPath === buildSeasonPath("squads")) {
+    return { name: "squads", path: cleanPath };
+  }
+
+  if (cleanPath.startsWith(`${buildSeasonPath("squads")}/`)) {
+    return {
+      name: "squad-detail",
+      teamSlug: cleanPath.replace(`${buildSeasonPath("squads")}/`, ""),
+      path: cleanPath,
+    };
+  }
+
+  if (cleanPath === buildSeasonPath("points-table")) {
+    return { name: "points-table", path: cleanPath };
+  }
+
+  if (cleanPath === buildSeasonPath("auction")) {
+    return { name: "auction", path: cleanPath };
+  }
+
+  return { name: "not-found", path: buildSeasonPath("404") };
+}
+
+const ROUTE_TITLES = {
+  home: "Equality Premier League | Season 1",
+  teams: "Teams | EPL Season 1",
+  squads: "Squads | EPL Season 1",
+  "squad-detail": "Squad | EPL Season 1",
+  "points-table": "Points Table | EPL Season 1",
+  auction: "Auction | EPL Season 1",
+  "not-found": "Page Not Found | EPL Season 1",
+};
+
+function setRouteTitle(routeName) {
+  document.title = ROUTE_TITLES[routeName] ?? "Equality Premier League";
+}
+
+function navigateTo(path, options = {}) {
+  const nextRoute = parseRoute(path);
+  const method = options.replace ? "replaceState" : "pushState";
+  window.history[method]({}, "", nextRoute.path);
+  uiState.route = nextRoute;
+  setRouteTitle(nextRoute.name);
+  render();
 }
 
 function getActiveSlot() {
@@ -799,7 +963,7 @@ function renderLiveMode() {
 
   const isLive = Boolean(snapshot?.auctionState?.isLive);
   const isPublic = uiState.currentView === "public";
-  const shouldShow = isLive && isPublic;
+  const shouldShow = isLive && isPublic && uiState.route?.name === "auction";
 
   liveOverlay.classList.toggle("live-overlay--active", shouldShow);
   document.body.style.overflow = shouldShow ? "hidden" : "";
@@ -1228,6 +1392,435 @@ function renderLoadingState() {
   `;
 }
 
+function renderNavigation() {
+  if (!uiState.route) {
+    return;
+  }
+
+  routeLinks.forEach((link) => {
+    const routeName = link.dataset.routeLink || "home";
+    const isActive = routeName === uiState.route.name || (routeName === "squads" && uiState.route.name === "squad-detail");
+    link.classList.toggle("league-nav__link--active", isActive);
+  });
+}
+
+function getAuctionSummary() {
+  const soldCount = snapshot.players.filter((player) => player.status === "Sold").length;
+  const lockedCount = snapshot.players.filter((player) => player.status === "Locked").length;
+  const totalRequired = snapshot.meta.totalPlayers;
+  const completedCount = soldCount + lockedCount;
+  const completionPct = Math.round((completedCount / totalRequired) * 100);
+  const activeSlot = getActiveSlot();
+
+  return {
+    soldCount,
+    lockedCount,
+    completedCount,
+    completionPct,
+    activeSlot,
+    isArchived: completedCount >= totalRequired,
+  };
+}
+
+function renderFixtureCards() {
+  return SEASON_FIXTURES.map(
+    (matchday) => `
+      <article class="fixture-day-card">
+        <div class="fixture-day-card__header">
+          <div>
+            <p class="eyebrow">Matchday</p>
+            <h3>${matchday.dayLabel}</h3>
+          </div>
+          <span class="mini-pill">${matchday.matches.length} fixtures</span>
+        </div>
+        <div class="fixture-list">
+          ${matchday.matches
+            .map(
+              (match) => `
+                <article class="fixture-list__item">
+                  <div>
+                    <strong>${match.label}</strong>
+                    <p>${match.home} vs ${match.away}</p>
+                  </div>
+                  <span class="league-badge ${match.status === "Scheduled" ? "league-badge--live" : "league-badge--archived"}">
+                    ${match.status}
+                  </span>
+                </article>
+              `
+            )
+            .join("")}
+        </div>
+      </article>
+    `
+  ).join("");
+}
+
+function renderHomePage() {
+  const { soldCount, lockedCount, completionPct, activeSlot, isArchived } = getAuctionSummary();
+  const recentSales = getCompletedSales().slice(0, 4);
+
+  seasonPage.innerHTML = `
+    <section class="season-hero">
+      <div class="season-hero__copy">
+        <p class="eyebrow">Equality Premier League</p>
+        <h1>Season ${SEASON_NUMBER} League Platform</h1>
+        <p class="season-hero__summary">
+          Season shell for EPL with league navigation, franchise directories, squad access, and a live auction control surface under one season-aware experience.
+        </p>
+        <div class="season-hero__actions">
+          <a class="button" href="${buildSeasonPath("auction")}" data-route-link="auction">Open Auction</a>
+          <a class="button button--ghost" href="${buildSeasonPath("teams")}" data-route-link="teams">Browse Teams</a>
+        </div>
+      </div>
+      <div class="season-hero__crest">
+        <img src="${snapshot.league.logoPath}" alt="${snapshot.league.name}" />
+      </div>
+    </section>
+
+    <section class="league-section">
+      <div class="league-section__header">
+        <div>
+          <p class="eyebrow">Season Summary</p>
+          <h2>League Highlights</h2>
+        </div>
+      </div>
+      <div class="league-card-grid">
+        <article class="league-card">
+          <span>Franchises</span>
+          <strong>${snapshot.teams.length}</strong>
+          <small>Participating teams in Season ${SEASON_NUMBER}</small>
+        </article>
+        <article class="league-card">
+          <span>Players</span>
+          <strong>${snapshot.meta.totalPlayers}</strong>
+          <small>${snapshot.meta.lockedPlayerCount} owner-locked · ${snapshot.meta.liveAuctionPlayerCount} live auction players</small>
+        </article>
+        <article class="league-card">
+          <span>Auction Progress</span>
+          <strong>${completionPct}%</strong>
+          <small>${soldCount} sold · ${lockedCount} locked before live bidding</small>
+        </article>
+        <article class="league-card">
+          <span>Current Desk</span>
+          <strong>${isArchived ? "Archived" : activeSlot?.label ?? "Awaiting"}</strong>
+          <small>${isArchived ? "Season 1 auction is complete and now view-only" : activeSlot?.role ?? "No active slot configured yet"}</small>
+        </article>
+      </div>
+    </section>
+
+    <section class="league-split">
+      <article class="league-panel">
+        <div class="league-panel__header">
+          <div>
+            <p class="eyebrow">Auction Module</p>
+            <h2>${isArchived ? "Auction Archived" : "Auction Live Panel"}</h2>
+          </div>
+          <span class="league-badge ${isArchived ? "league-badge--archived" : "league-badge--live"}">
+            ${isArchived ? "Archived" : snapshot.auctionState.isLive ? "Live" : "Ready"}
+          </span>
+        </div>
+        <p class="league-panel__copy">
+          ${isArchived
+            ? "All auction assignments are complete. The auction remains available as an archive and operating record for Season 1."
+            : "The auction stays available as a dedicated season panel. When active, it exposes the full live admin desk and public board."}
+        </p>
+        <div class="league-inline-stats">
+          <span class="mini-pill">${snapshot.auctionState.isLive ? "Auction running" : "Auction paused"}</span>
+          <span class="mini-pill">${snapshot.auctionState.currentBid ? `${formatPoints(snapshot.auctionState.currentBid)} on desk` : "Base price ready"}</span>
+          <span class="mini-pill">${snapshot.meta.squadSize} slots per team</span>
+        </div>
+        <a class="button" href="${buildSeasonPath("auction")}" data-route-link="auction">
+          ${isArchived ? "Open Auction Archive" : "Go To Auction"}
+        </a>
+      </article>
+
+      <article class="league-panel">
+        <div class="league-panel__header">
+          <div>
+            <p class="eyebrow">Recent Activity</p>
+            <h2>Latest Sales</h2>
+          </div>
+        </div>
+        ${
+          recentSales.length
+            ? `<div class="league-feed">
+                ${recentSales
+                  .map((sale) => {
+                    const player = snapshot.players.find((entry) => entry.id === sale.playerId);
+                    const team = snapshot.teams.find((entry) => entry.id === sale.teamId);
+                    return `
+                      <article class="league-feed__item">
+                        <strong>${player?.name ?? "-"}</strong>
+                        <p>${team?.name ?? "-"} · ${formatPoints(sale.amount)}</p>
+                      </article>
+                    `;
+                  })
+                  .join("")}
+              </div>`
+            : `<div class="league-empty">
+                No live sales yet. Once bidding starts, completed auction picks will show here.
+              </div>`
+        }
+      </article>
+    </section>
+
+    <section class="league-section">
+      <div class="league-section__header">
+        <div>
+          <p class="eyebrow">Fixtures</p>
+          <h2>Season 1 Match Schedule</h2>
+        </div>
+        <span class="mini-pill">${SEASON_FIXTURES.length} matchdays</span>
+      </div>
+      <div class="fixture-grid">
+        ${renderFixtureCards()}
+      </div>
+    </section>
+  `;
+}
+
+function renderTeamsDirectory() {
+  seasonPage.innerHTML = `
+    <section class="league-section">
+      <div class="league-section__header">
+        <div>
+          <p class="eyebrow">Franchise Directory</p>
+          <h2>Season ${SEASON_NUMBER} Teams</h2>
+        </div>
+      </div>
+      <div class="franchise-grid">
+        ${snapshot.teams
+          .map((team, index) => {
+            const squadCount = snapshot.players.filter((player) => player.soldToTeamId === team.id).length;
+            return `
+              <article class="franchise-card franchise-card--${index + 1}">
+                <img class="franchise-card__logo" src="${team.logoPath}" alt="${team.name}" />
+                <span class="franchise-card__code">${team.code}</span>
+                <h3>${team.name}</h3>
+                <p>${team.owner}</p>
+                <div class="franchise-card__stats">
+                  <span>${formatPoints(team.purseRemaining)} purse left</span>
+                  <span>${squadCount}/${snapshot.meta.squadSize} players assigned</span>
+                </div>
+                <div class="franchise-card__actions">
+                  <a class="button" href="${buildSeasonPath("squads", getTeamSlug(team))}" data-route-link="squads">View Squad</a>
+                  <a class="button button--ghost" href="${buildSeasonPath("auction")}" data-route-link="auction">Open Auction</a>
+                </div>
+              </article>
+            `;
+          })
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderSquadsPage(teamSlug = null) {
+  const focusedTeam = teamSlug ? getTeamBySlug(teamSlug) : null;
+
+  if (teamSlug && !focusedTeam) {
+    seasonPage.innerHTML = `
+      <section class="league-section">
+        <div class="league-empty">The requested squad page does not exist for Season ${SEASON_NUMBER}.</div>
+      </section>
+    `;
+    return;
+  }
+
+  if (focusedTeam) {
+    seasonPage.innerHTML = `
+      <section class="league-section">
+        <div class="league-section__header">
+          <div>
+            <p class="eyebrow">Team Squad</p>
+            <h2>${focusedTeam.name}</h2>
+          </div>
+          <a class="button button--ghost" href="${buildSeasonPath("squads")}" data-route-link="squads">All Squads</a>
+        </div>
+        <div class="squad-detail-hero">
+          <img class="squad-detail-hero__logo" src="${focusedTeam.logoPath}" alt="${focusedTeam.name}" />
+          <div>
+            <p class="squad-detail-hero__meta">${focusedTeam.code} · Season ${SEASON_NUMBER}</p>
+            <h3>${focusedTeam.name}</h3>
+            <p>${focusedTeam.owner}</p>
+            <div class="league-inline-stats">
+              <span class="mini-pill">${formatPoints(focusedTeam.purseRemaining)} purse remaining</span>
+              <span class="mini-pill">${focusedTeam.filledSlots}/${snapshot.meta.squadSize} slots filled</span>
+            </div>
+          </div>
+        </div>
+        <div class="squad-detail-grid">
+          ${snapshot.slots
+            .map((slot) => {
+              const player = getTeamSlotPlayer(focusedTeam.id, slot.slotNumber);
+              return `
+                <article class="slot-detail-card">
+                  <span>${slot.label}</span>
+                  <strong>${player ? player.name : "Open"}</strong>
+                  <p>${player ? player.roleLabel : slot.role}</p>
+                </article>
+              `;
+            })
+            .join("")}
+        </div>
+      </section>
+    `;
+    return;
+  }
+
+  seasonPage.innerHTML = `
+    <section class="league-section">
+      <div class="league-section__header">
+        <div>
+          <p class="eyebrow">Squad Centre</p>
+          <h2>Team Squads</h2>
+        </div>
+      </div>
+      <div class="squad-directory">
+        ${snapshot.teams
+          .map(
+            (team, index) => `
+              <article class="squad-directory__card squad-directory__card--${index + 1}">
+                <img class="squad-directory__logo" src="${team.logoPath}" alt="${team.name}" />
+                <div>
+                  <h3>${team.name}</h3>
+                  <p>${team.filledSlots}/${snapshot.meta.squadSize} slots currently filled</p>
+                </div>
+                <a class="button" href="${buildSeasonPath("squads", getTeamSlug(team))}" data-route-link="squads">Open Squad Page</a>
+              </article>
+            `
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderPointsTablePage() {
+  seasonPage.innerHTML = `
+    <section class="league-section">
+      <div class="league-section__header">
+        <div>
+          <p class="eyebrow">Standings</p>
+          <h2>Points Table</h2>
+        </div>
+      </div>
+      <div class="league-inline-stats">
+        <span class="mini-pill">Season kicks off Apr 11</span>
+        <span class="mini-pill">${SEASON_FIXTURES.length} matchdays scheduled</span>
+        <span class="mini-pill">Standings update after each matchday</span>
+      </div>
+      <div class="roster-table-wrap">
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th>Team</th>
+              <th>Played</th>
+              <th>Won</th>
+              <th>Lost</th>
+              <th>NR</th>
+              <th>Points</th>
+              <th>NRR</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${snapshot.teams
+              .map(
+                (team) => `
+                  <tr>
+                    <td>${team.name}</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>-</td>
+                  </tr>
+                `
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="league-section">
+      <div class="league-section__header">
+        <div>
+          <p class="eyebrow">Fixtures</p>
+          <h2>Schedule Driving This Table</h2>
+        </div>
+      </div>
+      <div class="league-empty">
+        Season 1 begins Apr 11 — standings will update live after each matchday.
+      </div>
+      <div class="fixture-grid">
+        ${renderFixtureCards()}
+      </div>
+    </section>
+  `;
+}
+
+function renderSeasonPage() {
+  if (!uiState.route || !seasonPage || !auctionShell) {
+    return;
+  }
+
+  const isAuctionRoute = uiState.route.name === "auction";
+  auctionShell.classList.toggle("auction-shell--hidden", !isAuctionRoute);
+  seasonPage.classList.toggle("season-page--hidden", isAuctionRoute);
+
+  if (!snapshot) {
+    if (!isAuctionRoute) {
+      seasonPage.innerHTML = `
+        <section class="league-section">
+          <div class="league-empty">Loading Season ${SEASON_NUMBER} league data…</div>
+        </section>
+      `;
+    }
+    return;
+  }
+
+  if (isAuctionRoute) {
+    seasonPage.innerHTML = "";
+    return;
+  }
+
+  switch (uiState.route.name) {
+    case "teams":
+      renderTeamsDirectory();
+      break;
+    case "squads":
+      renderSquadsPage();
+      break;
+    case "squad-detail":
+      renderSquadsPage(uiState.route.teamSlug);
+      break;
+    case "points-table":
+      renderPointsTablePage();
+      break;
+    case "not-found":
+      seasonPage.innerHTML = `
+        <section class="league-section">
+          <div class="league-section__header">
+            <div>
+              <p class="eyebrow">404</p>
+              <h2>Page Not Found</h2>
+            </div>
+          </div>
+          <div class="league-empty">
+            This page doesn't exist. <a class="inline-link" href="${SEASON_BASE}" data-route-link="home">Back to home →</a>
+          </div>
+        </section>
+      `;
+      break;
+    case "home":
+    default:
+      renderHomePage();
+      break;
+  }
+}
+
 function showLoginOverlay() {
   if (document.querySelector("#login-overlay")) return;
   const overlay = document.createElement("div");
@@ -1282,16 +1875,18 @@ function showLoginOverlay() {
 }
 
 function render() {
+  renderNavigation();
   document.body.classList.toggle("body-live", Boolean(snapshot?.auctionState?.isLive));
   document.body.classList.toggle("sse-disconnected", snapshot !== null && !uiState.connected);
   renderViewState();
   renderFlashBanner();
 
+  renderSeasonPage();
+
   if (!snapshot) {
     renderLoadingState();
     return;
   }
-
   renderAuctionProgress();
   renderSummaryCards();
   renderBranding();
@@ -1326,6 +1921,32 @@ function render() {
   undoSaleButton.disabled = snapshot.undoStack.length === 0;
   toggleLiveButton.textContent = snapshot.auctionState.isLive ? "Pause Auction" : "Start Auction";
 }
+
+document.addEventListener("click", (event) => {
+  const link = event.target.closest("[data-route-link]");
+  if (!link) {
+    return;
+  }
+
+  const href = link.getAttribute("href");
+  if (!href) {
+    return;
+  }
+
+  const url = new URL(href, window.location.origin);
+  if (url.origin !== window.location.origin) {
+    return;
+  }
+
+  event.preventDefault();
+  navigateTo(url.pathname);
+});
+
+window.addEventListener("popstate", () => {
+  uiState.route = parseRoute(window.location.pathname);
+  setRouteTitle(uiState.route.name);
+  render();
+});
 
 viewButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -1437,6 +2058,12 @@ window.addEventListener("beforeunload", () => {
     eventSource.close();
   }
 });
+
+uiState.route = parseRoute(window.location.pathname);
+setRouteTitle(uiState.route.name);
+if (window.location.pathname !== uiState.route.path) {
+  window.history.replaceState({}, "", uiState.route.path);
+}
 
 render();
 loadState().then(() => {

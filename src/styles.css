@@ -2570,6 +2570,21 @@ select {
 }
 
 @media (max-width: 960px) {
+  .season-hero,
+  .league-split {
+    grid-template-columns: 1fr;
+  }
+
+  .league-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .squad-directory__card,
+  .squad-detail-hero {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
   .topbar,
   .control-strip,
   .layout {
@@ -2645,6 +2660,23 @@ select {
 }
 
 @media (max-width: 680px) {
+  .season-hero,
+  .league-section,
+  .league-panel {
+    padding: 20px;
+    border-radius: 20px;
+  }
+
+  .league-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .franchise-grid,
+  .squad-detail-grid,
+  .fixture-grid {
+    grid-template-columns: 1fr;
+  }
+
   .page-shell {
     width: min(100% - 20px, 1240px);
     padding-top: 20px;
@@ -3065,6 +3097,330 @@ select {
   flex-shrink: 0;
 }
 
+.season-page--hidden,
+.auction-shell--hidden {
+  display: none;
+}
+
+.season-hero,
+.league-section,
+.league-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.season-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) 240px;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 28px 30px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 106, 0, 0.18), transparent 32%),
+    linear-gradient(135deg, rgba(10, 20, 39, 0.98), rgba(7, 14, 26, 0.94));
+}
+
+.season-hero__summary,
+.league-panel__copy,
+.franchise-card p,
+.squad-directory__card p,
+.squad-detail-hero p {
+  color: var(--ink-soft);
+}
+
+.season-hero__copy h1,
+.league-section__header h2,
+.league-panel__header h2,
+.franchise-card h3,
+.squad-directory__card h3,
+.squad-detail-hero h3,
+.slot-detail-card strong {
+  margin: 0;
+  font-family: "Oswald", sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.season-hero__actions,
+.franchise-card__actions,
+.league-inline-stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.season-hero__crest {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.season-hero__crest img {
+  width: min(100%, 190px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.36));
+}
+
+.league-section {
+  padding: 24px;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
+    var(--panel);
+  margin-bottom: 20px;
+}
+
+.league-section__header,
+.league-panel__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.league-card-grid,
+.franchise-grid,
+.squad-detail-grid,
+.fixture-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.league-card-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.league-card,
+.franchise-card,
+.squad-directory__card,
+.slot-detail-card,
+.league-panel {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.league-card span {
+  display: block;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+}
+
+.league-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.9rem;
+  color: var(--ink);
+}
+
+.league-card small {
+  display: block;
+  margin-top: 8px;
+  color: var(--ink-soft);
+}
+
+.league-split {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1.15fr 0.85fr;
+}
+
+.league-badge {
+  display: inline-flex;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.league-badge--live {
+  background: rgba(86, 216, 174, 0.14);
+  color: var(--mint);
+}
+
+.league-badge--archived {
+  background: rgba(247, 191, 79, 0.18);
+  color: #ffe3a7;
+}
+
+.league-feed {
+  display: grid;
+  gap: 12px;
+}
+
+.league-feed__item {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.league-feed__item strong {
+  display: block;
+}
+
+.fixture-day-card {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fixture-day-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.fixture-day-card__header h3 {
+  margin: 4px 0 0;
+  font-family: "Oswald", sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.fixture-list {
+  display: grid;
+  gap: 12px;
+}
+
+.fixture-list__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fixture-list__item strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.fixture-list__item p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.league-feed__item p,
+.league-empty {
+  margin: 6px 0 0;
+  color: var(--ink-soft);
+}
+
+.league-empty {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.franchise-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.fixture-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.franchise-card {
+  text-align: center;
+}
+
+.franchise-card__logo,
+.squad-directory__logo,
+.squad-detail-hero__logo {
+  width: 104px;
+  height: 104px;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.34));
+}
+
+.franchise-card__code {
+  display: inline-flex;
+  margin-top: 14px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.franchise-card__stats {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--ink-soft);
+}
+
+.squad-directory {
+  display: grid;
+  gap: 16px;
+}
+
+.squad-directory__card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+}
+
+.squad-detail-hero {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.squad-detail-hero__meta {
+  margin: 0 0 8px;
+  color: #f0b260;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+}
+
+.squad-detail-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.slot-detail-card span {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.slot-detail-card p {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+}
+
 /* ── Archive Banner ──────────────────────────────────────────────── */
 
 .archive-banner {
@@ -3110,4 +3466,29 @@ select {
 
 .archive-banner__link:hover {
   background: rgba(247, 191, 79, 0.12);
+}
+
+.inline-link {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.inline-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .league-nav__season {
+    display: none;
+  }
+
+  .league-nav__links {
+    gap: 0;
+  }
+
+  .league-nav__link {
+    padding: 7px 10px;
+    font-size: 0.8rem;
+  }
 }

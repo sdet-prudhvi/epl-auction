@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EPL Season 1 Auction Arena</title>
+    <title>Equality Premier League | Season 1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./src/styles.css" />
+    <link rel="stylesheet" href="/src/styles.css" />
     <style>
       #login-overlay {
         position: fixed;
@@ -66,13 +66,16 @@
 
       <nav class="league-nav">
         <div class="league-nav__inner">
-          <a class="league-nav__brand" href="/">
+          <a class="league-nav__brand" href="/season/1" data-route-link>
             <img class="league-nav__logo" id="nav-logo" src="/assets/branding/epl-logo.png" alt="EPL" />
             <span>EPL</span>
           </a>
           <div class="league-nav__links">
-            <a class="league-nav__link league-nav__link--active" href="/">Auction</a>
-            <a class="league-nav__link" href="/squads.html">Squads</a>
+            <a class="league-nav__link" href="/season/1" data-route-link="home">Home</a>
+            <a class="league-nav__link" href="/season/1/teams" data-route-link="teams">Teams</a>
+            <a class="league-nav__link" href="/season/1/squads" data-route-link="squads">Squads</a>
+            <a class="league-nav__link" href="/season/1/points-table" data-route-link="points-table">Points Table</a>
+            <a class="league-nav__link" href="/season/1/auction" data-route-link="auction">Auction</a>
           </div>
           <span class="league-nav__season">Season 1</span>
         </div>
@@ -81,9 +84,12 @@
       <div id="archive-banner" class="archive-banner archive-banner--hidden" role="status">
         <span class="archive-banner__trophy">🏆</span>
         <span class="archive-banner__text">Season 1 Auction Complete — all spots filled.</span>
-        <a class="archive-banner__link" href="/squads.html">View final squads →</a>
+        <a class="archive-banner__link" href="/season/1/squads" data-route-link="squads">View final squads →</a>
       </div>
 
+      <section id="season-page" class="season-page season-page--hidden"></section>
+
+      <section id="auction-shell" class="auction-shell">
       <header class="topbar">
         <div class="topbar__crest-panel">
           <div class="topbar__crest-shell">
@@ -351,11 +357,12 @@
           </div>
         </section>
       </main>
+      </section>
     </div>
 
     <div id="live-overlay" class="live-overlay" aria-label="Live auction display" aria-live="assertive"></div>
     <div id="sold-moment" class="sold-moment" aria-hidden="true"></div>
 
-    <script type="module" src="./src/app.js"></script>
+    <script type="module" src="/src/app.js"></script>
   </body>
 </html>
