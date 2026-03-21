@@ -600,6 +600,16 @@ function renderBranding() {
     leagueLogo.src = snapshot.league.logoPath;
   }
 
+  // Archive banner — show when every slot is filled across all teams
+  const archiveBanner = document.querySelector("#archive-banner");
+  if (archiveBanner) {
+    const totalSlots = snapshot.slots.length * snapshot.teams.length;
+    const filled = snapshot.players.filter(
+      (p) => p.status === "Sold" || p.status === "Locked"
+    ).length;
+    archiveBanner.classList.toggle("archive-banner--hidden", filled < totalSlots);
+  }
+
   if (!sponsorTrack) {
     return;
   }

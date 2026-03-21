@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EPL Season 1 · Squads</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/styles.css" />
+    <style>
+      /* ── Squads Page ──────────────────────────────────────────── */
+
+      .squads-hero {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        padding: 28px 32px;
+        margin-bottom: 24px;
+        border-radius: 24px;
+        background:
+          linear-gradient(135deg, rgba(247, 191, 79, 0.13) 0%, transparent 55%),
+          rgba(10, 20, 38, 0.82);
+        border: 1px solid rgba(247, 191, 79, 0.2);
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .squads-hero__trophy {
+        font-size: 2.6rem;
+        line-height: 1;
+        flex-shrink: 0;
+        filter: drop-shadow(0 4px 14px rgba(247, 191, 79, 0.5));
+      }
+
+      .squads-hero__title {
+        font-family: "Oswald", sans-serif;
+        font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #ffffff 30%, var(--gold) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0;
+        line-height: 1.1;
+      }
+
+      .squads-hero__sub {
+        margin: 6px 0 0;
+        font-size: 0.88rem;
+        color: var(--ink-soft);
+      }
+
+      .squads-hero__meta {
+        margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .squads-hero__pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: rgba(247, 191, 79, 0.12);
+        border: 1px solid rgba(247, 191, 79, 0.22);
+        color: var(--gold);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .squads-hero__pill::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--gold);
+        box-shadow: 0 0 10px rgba(247, 191, 79, 0.8);
+        flex-shrink: 0;
+      }
+
+      /* ── Squads Grid ─────────────────────────────────────────── */
+
+      .squads-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .squad-sheet {
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
+      }
+
+      .squad-sheet--1 {
+        background: linear-gradient(170deg, #0d203f 0%, #060f1f 100%);
+        border-color: rgba(58, 143, 255, 0.2);
+      }
+      .squad-sheet--2 {
+        background: linear-gradient(170deg, #2a1c08 0%, #130d04 100%);
+        border-color: rgba(247, 191, 79, 0.22);
+      }
+      .squad-sheet--3 {
+        background: linear-gradient(170deg, #2a1008 0%, #140703 100%);
+        border-color: rgba(255, 106, 0, 0.2);
+      }
+      .squad-sheet--4 {
+        background: linear-gradient(170deg, #2a0808 0%, #140404 100%);
+        border-color: rgba(220, 45, 24, 0.2);
+      }
+
+      /* ── Squad Header ─────────────────────────────────────────── */
+
+      .squad-sheet__header {
+        display: grid;
+        grid-template-columns: 60px 1fr auto;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      }
+
+      .squad-sheet__logo {
+        width: 56px;
+        height: 56px;
+        object-fit: contain;
+        filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.55));
+      }
+
+      .squad-sheet__team-name {
+        font-family: "Oswald", sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin: 0;
+        line-height: 1.1;
+      }
+
+      .squad-sheet__team-code {
+        display: inline-block;
+        margin-top: 5px;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.65);
+      }
+
+      .squad-sheet__purse {
+        text-align: right;
+      }
+
+      .squad-sheet__purse-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: rgba(255, 255, 255, 0.38);
+        display: block;
+      }
+
+      .squad-sheet__purse-val {
+        font-family: "Oswald", sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--gold);
+        line-height: 1.1;
+        display: block;
+      }
+
+      .squad-sheet__purse-sub {
+        font-size: 0.7rem;
+        color: rgba(255, 255, 255, 0.35);
+        display: block;
+        margin-top: 1px;
+      }
+
+      /* ── Stat bar under header ──────────────────────────────── */
+
+      .squad-sheet__stats-bar {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .squad-sheet__stat {
+        flex: 1;
+        padding: 10px 14px;
+        text-align: center;
+        border-right: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .squad-sheet__stat:last-child {
+        border-right: none;
+      }
+
+      .squad-sheet__stat-val {
+        display: block;
+        font-family: "Oswald", sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: white;
+        line-height: 1;
+      }
+
+      .squad-sheet__stat-label {
+        display: block;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: rgba(255, 255, 255, 0.38);
+        margin-top: 3px;
+      }
+
+      /* ── Player Rows ─────────────────────────────────────────── */
+
+      .squad-sheet__players {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .squad-player {
+        display: grid;
+        grid-template-columns: 34px 1fr auto;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 14px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+        transition: background 130ms ease;
+      }
+
+      .squad-player:last-child {
+        border-bottom: none;
+      }
+
+      .squad-player:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .squad-player__photo {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        object-fit: cover;
+        object-position: top center;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        flex-shrink: 0;
+      }
+
+      .squad-player__info {
+        min-width: 0;
+      }
+
+      .squad-player__name {
+        font-weight: 700;
+        font-size: 0.88rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--ink);
+      }
+
+      .squad-player__meta {
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.38);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .squad-player__price {
+        font-family: "Oswald", sans-serif;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: var(--gold);
+        white-space: nowrap;
+        text-align: right;
+      }
+
+      .squad-player__price--locked {
+        font-family: "Source Sans 3", sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.3);
+        letter-spacing: 0.04em;
+      }
+
+      .squad-player__price--open {
+        font-family: "Source Sans 3", sans-serif;
+        font-style: italic;
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* ── Loading / Error ─────────────────────────────────────── */
+
+      .squads-loading {
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--ink-soft);
+        font-size: 1rem;
+        grid-column: 1 / -1;
+      }
+
+      @media (max-width: 1100px) {
+        .squads-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 680px) {
+        .squads-hero {
+          flex-wrap: wrap;
+          padding: 20px;
+        }
+
+        .squads-hero__meta {
+          width: 100%;
+          align-items: flex-start;
+          margin-left: 0;
+        }
+
+        .squads-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="arena-glow arena-glow--left"></div>
+      <div class="arena-glow arena-glow--right"></div>
+      <div class="arena-grid" aria-hidden="true"></div>
+
+      <nav class="league-nav">
+        <div class="league-nav__inner">
+          <a class="league-nav__brand" href="/">
+            <img class="league-nav__logo" src="/assets/branding/epl-logo.png" alt="EPL" />
+            <span>EPL</span>
+          </a>
+          <div class="league-nav__links">
+            <a class="league-nav__link" href="/">Auction</a>
+            <a class="league-nav__link league-nav__link--active" href="/squads.html">Squads</a>
+          </div>
+          <span class="league-nav__season">Season 1</span>
+        </div>
+      </nav>
+
+      <div class="squads-hero">
+        <span class="squads-hero__trophy">🏆</span>
+        <div>
+          <h1 class="squads-hero__title">Season 1 — Final Squads</h1>
+          <p class="squads-hero__sub">Equality Premier League · 4 franchises · 12 players each</p>
+        </div>
+        <div class="squads-hero__meta">
+          <span class="squads-hero__pill">Auction Complete</span>
+        </div>
+      </div>
+
+      <div id="squads-root">
+        <div class="squads-grid">
+          <p class="squads-loading">Loading squads…</p>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      function fmt(n) {
+        return Number(n || 0).toLocaleString();
+      }
+
+      function getPlayerForSlot(players, teamId, slotNumber) {
+        return players.find(
+          (p) => p.soldToTeamId === teamId && p.assignedSlotNumber === slotNumber
+        ) || null;
+      }
+
+      function renderPriceCell(player) {
+        if (!player) {
+          return `<span class="squad-player__price squad-player__price--open">Open</span>`;
+        }
+        if (player.status === "Locked") {
+          return `<span class="squad-player__price squad-player__price--locked">Owner Pick</span>`;
+        }
+        return `<span class="squad-player__price">${fmt(player.soldAmount)}</span>`;
+      }
+
+      function renderSquads(state) {
+        const { teams, players, slots, settings } = state;
+
+        const root = document.getElementById("squads-root");
+        root.innerHTML = `
+          <div class="squads-grid">
+            ${teams.map((team, i) => {
+              const spent = team.purseTotal - team.purseRemaining;
+              const spentPct = Math.round((spent / team.purseTotal) * 100);
+              const soldPlayers = players.filter(
+                (p) => p.soldToTeamId === team.id && p.status === "Sold"
+              );
+              const avgPrice = soldPlayers.length
+                ? Math.round(soldPlayers.reduce((sum, p) => sum + (p.soldAmount || 0), 0) / soldPlayers.length)
+                : 0;
+
+              return `
+                <article class="squad-sheet squad-sheet--${i + 1}">
+                  <div class="squad-sheet__header">
+                    <img class="squad-sheet__logo" src="${team.logoPath}"
+                      alt="${team.name}" onerror="this.src='/assets/branding/epl-logo.png'" />
+                    <div>
+                      <h2 class="squad-sheet__team-name">${team.name}</h2>
+                      <span class="squad-sheet__team-code">${team.code}</span>
+                    </div>
+                    <div class="squad-sheet__purse">
+                      <span class="squad-sheet__purse-label">Remaining Purse</span>
+                      <span class="squad-sheet__purse-val">${fmt(team.purseRemaining)}</span>
+                      <span class="squad-sheet__purse-sub">${spentPct}% spent</span>
+                    </div>
+                  </div>
+
+                  <div class="squad-sheet__stats-bar">
+                    <div class="squad-sheet__stat">
+                      <span class="squad-sheet__stat-val">${team.filledSlots}/${state.meta.squadSize}</span>
+                      <span class="squad-sheet__stat-label">Players</span>
+                    </div>
+                    <div class="squad-sheet__stat">
+                      <span class="squad-sheet__stat-val">${fmt(spent)}</span>
+                      <span class="squad-sheet__stat-label">Total Spent</span>
+                    </div>
+                    <div class="squad-sheet__stat">
+                      <span class="squad-sheet__stat-val">${avgPrice ? fmt(avgPrice) : "—"}</span>
+                      <span class="squad-sheet__stat-label">Avg Price</span>
+                    </div>
+                  </div>
+
+                  <div class="squad-sheet__players">
+                    ${slots.map((slot) => {
+                      const player = getPlayerForSlot(players, team.id, slot.slotNumber);
+                      return `
+                        <div class="squad-player">
+                          <img class="squad-player__photo"
+                            src="${player?.photoPath || '/assets/players/default.svg'}"
+                            alt="${player?.name || 'Open'}"
+                            onerror="this.src='/assets/players/default.svg'" />
+                          <div class="squad-player__info">
+                            <div class="squad-player__name">${player ? player.name : "Open Slot"}</div>
+                            <div class="squad-player__meta">${slot.label} · ${slot.role}</div>
+                          </div>
+                          ${renderPriceCell(player)}
+                        </div>
+                      `;
+                    }).join("")}
+                  </div>
+                </article>
+              `;
+            }).join("")}
+          </div>
+        `;
+      }
+
+      fetch("/api/state", { cache: "no-store" })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.state) {
+            renderSquads(data.state);
+          } else {
+            throw new Error("No state");
+          }
+        })
+        .catch(() => {
+          document.getElementById("squads-root").innerHTML = `
+            <div class="squads-grid">
+              <p class="squads-loading">
+                Could not load squads. Make sure the auction server is running at this address.
+              </p>
+            </div>
+          `;
+        });
+    </script>
+  </body>
+</html>
