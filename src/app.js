@@ -1496,6 +1496,24 @@ function renderHomePage() {
           </a>
         </div>
       </div>
+      <div class="home-sponsors__divider" aria-hidden="true"></div>
+      <div class="home-sponsors__group">
+        <span class="home-sponsors__label">Umpire Partner</span>
+        <div class="home-sponsors__logos">
+          <a href="https://site.dgtechsoln.com/bot-9-amp-gaming-park/" target="_blank" rel="noopener noreferrer">
+            <img src="/assets/sponsors/05_BOT.png" alt="BOT9" />
+          </a>
+        </div>
+      </div>
+      <div class="home-sponsors__divider" aria-hidden="true"></div>
+      <div class="home-sponsors__group">
+        <span class="home-sponsors__label">Strategic Timeout Partner</span>
+        <div class="home-sponsors__logos">
+          <a href="https://share.google/NX40m8bszZ4qvcS3v" target="_blank" rel="noopener noreferrer">
+            <img src="/assets/sponsors/06_SMILE.png" alt="Smile Care" />
+          </a>
+        </div>
+      </div>
     </section>
 
     <!-- 1: Cinematic hero — centered badge, dramatic gradient backdrop -->
