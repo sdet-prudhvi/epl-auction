@@ -5,6 +5,22 @@ import { URL } from "node:url";
 import { randomUUID } from "node:crypto";
 import { applyAction, getState, resetAuction } from "./backend/store.js";
 
+// Load .env file if present (local development)
+try {
+  const envFile = await readFile(".env", "utf8");
+  for (const line of envFile.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx === -1) continue;
+    const key = trimmed.slice(0, eqIdx).trim();
+    const val = trimmed.slice(eqIdx + 1).trim();
+    if (key && !process.env[key]) process.env[key] = val;
+  }
+} catch {
+  // No .env file — using environment variables from host (Render, etc.)
+}
+
 const rootDir = process.cwd();
 const port = Number(process.env.PORT || 4173);
 const host = process.env.HOST || "0.0.0.0";
@@ -90,6 +106,20 @@ async function serveStatic(req, res, pathname) {
     });
     res.end(file);
   } catch {
+    if (!path.extname(pathname)) {
+      try {
+        const file = await readFile(path.join(rootDir, "index.html"));
+        res.writeHead(200, {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+        });
+        res.end(file);
+        return;
+      } catch {
+        // fall through to 404 below
+      }
+    }
+
     sendJson(res, 404, { ok: false, message: "File not found." });
   }
 }
