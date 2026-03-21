@@ -198,7 +198,21 @@ function parseRoute(pathname = window.location.pathname) {
     return { name: "auction", path: cleanPath };
   }
 
-  return { name: "home", path: buildSeasonPath() };
+  return { name: "not-found", path: buildSeasonPath("404") };
+}
+
+const ROUTE_TITLES = {
+  home: "Equality Premier League | Season 1",
+  teams: "Teams | EPL Season 1",
+  squads: "Squads | EPL Season 1",
+  "squad-detail": "Squad | EPL Season 1",
+  "points-table": "Points Table | EPL Season 1",
+  auction: "Auction | EPL Season 1",
+  "not-found": "Page Not Found | EPL Season 1",
+};
+
+function setRouteTitle(routeName) {
+  document.title = ROUTE_TITLES[routeName] ?? "Equality Premier League";
 }
 
 function navigateTo(path, options = {}) {
@@ -206,6 +220,7 @@ function navigateTo(path, options = {}) {
   const method = options.replace ? "replaceState" : "pushState";
   window.history[method]({}, "", nextRoute.path);
   uiState.route = nextRoute;
+  setRouteTitle(nextRoute.name);
   render();
 }
 
@@ -1691,9 +1706,9 @@ function renderPointsTablePage() {
         </div>
       </div>
       <div class="league-inline-stats">
-        <span class="mini-pill">Points rule: placeholder pending</span>
-        <span class="mini-pill">NRR logic: placeholder pending</span>
-        <span class="mini-pill">${SEASON_FIXTURES.length} matchdays configured</span>
+        <span class="mini-pill">Season kicks off Apr 11</span>
+        <span class="mini-pill">${SEASON_FIXTURES.length} matchdays scheduled</span>
+        <span class="mini-pill">Standings update after each matchday</span>
       </div>
       <div class="roster-table-wrap">
         <table class="roster-table">
@@ -1737,7 +1752,7 @@ function renderPointsTablePage() {
         </div>
       </div>
       <div class="league-empty">
-        Fixtures are configured, but match outcomes, points allocation, and NRR calculation rules are still pending. The standings will stay as placeholders until those rules are finalized.
+        Season 1 begins Apr 11 — standings will update live after each matchday.
       </div>
       <div class="fixture-grid">
         ${renderFixtureCards()}
@@ -1783,6 +1798,21 @@ function renderSeasonPage() {
       break;
     case "points-table":
       renderPointsTablePage();
+      break;
+    case "not-found":
+      seasonPage.innerHTML = `
+        <section class="league-section">
+          <div class="league-section__header">
+            <div>
+              <p class="eyebrow">404</p>
+              <h2>Page Not Found</h2>
+            </div>
+          </div>
+          <div class="league-empty">
+            This page doesn't exist. <a class="inline-link" href="${SEASON_BASE}" data-route-link="home">Back to home →</a>
+          </div>
+        </section>
+      `;
       break;
     case "home":
     default:
@@ -1851,13 +1881,12 @@ function render() {
   renderViewState();
   renderFlashBanner();
 
+  renderSeasonPage();
+
   if (!snapshot) {
-    renderSeasonPage();
     renderLoadingState();
     return;
   }
-
-  renderSeasonPage();
   renderAuctionProgress();
   renderSummaryCards();
   renderBranding();
@@ -1915,6 +1944,7 @@ document.addEventListener("click", (event) => {
 
 window.addEventListener("popstate", () => {
   uiState.route = parseRoute(window.location.pathname);
+  setRouteTitle(uiState.route.name);
   render();
 });
 
@@ -2030,6 +2060,7 @@ window.addEventListener("beforeunload", () => {
 });
 
 uiState.route = parseRoute(window.location.pathname);
+setRouteTitle(uiState.route.name);
 if (window.location.pathname !== uiState.route.path) {
   window.history.replaceState({}, "", uiState.route.path);
 }

@@ -3467,3 +3467,28 @@ select {
 .archive-banner__link:hover {
   background: rgba(247, 191, 79, 0.12);
 }
+
+.inline-link {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.inline-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .league-nav__season {
+    display: none;
+  }
+
+  .league-nav__links {
+    gap: 0;
+  }
+
+  .league-nav__link {
+    padding: 7px 10px;
+    font-size: 0.8rem;
+  }
+}
