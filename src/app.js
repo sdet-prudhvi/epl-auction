@@ -13,6 +13,12 @@ const uiState = {
 
 const SEASON_NUMBER = 1;
 const SEASON_BASE = `/season/${SEASON_NUMBER}`;
+const TEAM_COLORS = {
+  "GOWTHAM'S XI": "#e63946",
+  "RAHUL'S XI":   "#3a86ff",
+  "SUNIL'S XI":   "#06d6a0",
+  "ACHARYA'S XI": "#9b5de5",
+};
 const SEASON_FIXTURES = [
   {
     dayLabel: "Saturday Apr 11",
@@ -1423,6 +1429,36 @@ function getAuctionSummary() {
 }
 
 function renderFixtureCards() {
+  function teamLogo(name) {
+    return snapshot?.teams.find((t) => t.name === name)?.logoPath ?? null;
+  }
+
+  function matchupHTML(match) {
+    const homeLogo = teamLogo(match.home);
+    const awayLogo = teamLogo(match.away);
+    const homeColor = TEAM_COLORS[match.home] ?? "rgba(255,255,255,0.2)";
+    const awayColor = TEAM_COLORS[match.away] ?? "rgba(255,255,255,0.2)";
+    const isTbd = match.status === "TBD";
+
+    return `
+      <article class="fixture-matchup" style="--home-color:${homeColor};--away-color:${awayColor};">
+        <div class="fixture-matchup__label">${match.label}</div>
+        <div class="fixture-matchup__teams">
+          <div class="fixture-matchup__team fixture-matchup__team--home">
+            ${homeLogo ? `<img src="${homeLogo}" alt="${match.home}" />` : `<span class="fixture-tbd-crest">?</span>`}
+            <span>${match.home}</span>
+          </div>
+          <div class="fixture-matchup__vs">VS</div>
+          <div class="fixture-matchup__team fixture-matchup__team--away">
+            ${awayLogo ? `<img src="${awayLogo}" alt="${match.away}" />` : `<span class="fixture-tbd-crest">?</span>`}
+            <span>${match.away}</span>
+          </div>
+        </div>
+        <span class="league-badge ${isTbd ? "league-badge--archived" : "league-badge--live"}">${match.status}</span>
+      </article>
+    `;
+  }
+
   return SEASON_FIXTURES.map(
     (matchday) => `
       <article class="fixture-day-card">
@@ -1434,21 +1470,7 @@ function renderFixtureCards() {
           <span class="mini-pill">${matchday.matches.length} fixtures</span>
         </div>
         <div class="fixture-list">
-          ${matchday.matches
-            .map(
-              (match) => `
-                <article class="fixture-list__item">
-                  <div>
-                    <strong>${match.label}</strong>
-                    <p>${match.home} vs ${match.away}</p>
-                  </div>
-                  <span class="league-badge ${match.status === "Scheduled" ? "league-badge--live" : "league-badge--archived"}">
-                    ${match.status}
-                  </span>
-                </article>
-              `
-            )
-            .join("")}
+          ${matchday.matches.map(matchupHTML).join("")}
         </div>
       </article>
     `
@@ -1456,142 +1478,90 @@ function renderFixtureCards() {
 }
 
 function renderHomePage() {
-  const { soldCount, lockedCount, completionPct, activeSlot, isArchived } = getAuctionSummary();
-  const recentSales = getCompletedSales().slice(0, 4);
+  const { soldCount, lockedCount, completionPct } = getAuctionSummary();
 
   seasonPage.innerHTML = `
-    <section class="season-hero">
-      <div class="season-hero__copy">
-        <p class="eyebrow">Equality Premier League</p>
-        <h1>Season ${SEASON_NUMBER} League Platform</h1>
-        <p class="season-hero__summary">
-          Season shell for EPL with league navigation, franchise directories, squad access, and a live auction control surface under one season-aware experience.
-        </p>
-        <div class="season-hero__actions">
-          <a class="button" href="${buildSeasonPath("auction")}" data-route-link="auction">Open Auction</a>
-          <a class="button button--ghost" href="${buildSeasonPath("teams")}" data-route-link="teams">Browse Teams</a>
-        </div>
-      </div>
-      <div class="season-hero__crest">
-        <img src="${snapshot.league.logoPath}" alt="${snapshot.league.name}" />
-      </div>
-    </section>
-
-    <section class="league-section">
-      <div class="league-section__header">
-        <div>
-          <p class="eyebrow">Season Summary</p>
-          <h2>League Highlights</h2>
-        </div>
-      </div>
-      <div class="league-card-grid">
-        <article class="league-card">
-          <span>Franchises</span>
-          <strong>${snapshot.teams.length}</strong>
-          <small>Participating teams in Season ${SEASON_NUMBER}</small>
-        </article>
-        <article class="league-card">
-          <span>Players</span>
-          <strong>${snapshot.meta.totalPlayers}</strong>
-          <small>${snapshot.meta.lockedPlayerCount} owner-locked · ${snapshot.meta.liveAuctionPlayerCount} live auction players</small>
-        </article>
-        <article class="league-card">
-          <span>Auction Progress</span>
-          <strong>${completionPct}%</strong>
-          <small>${soldCount} sold · ${lockedCount} locked before live bidding</small>
-        </article>
-        <article class="league-card">
-          <span>Current Desk</span>
-          <strong>${isArchived ? "Archived" : activeSlot?.label ?? "Awaiting"}</strong>
-          <small>${isArchived ? "Season 1 auction is complete and now view-only" : activeSlot?.role ?? "No active slot configured yet"}</small>
-        </article>
-      </div>
-    </section>
-
-    <section class="league-split">
-      <article class="league-panel">
-        <div class="league-panel__header">
-          <div>
-            <p class="eyebrow">Auction Module</p>
-            <h2>${isArchived ? "Auction Archived" : "Auction Live Panel"}</h2>
-          </div>
-          <span class="league-badge ${isArchived ? "league-badge--archived" : "league-badge--live"}">
-            ${isArchived ? "Archived" : snapshot.auctionState.isLive ? "Live" : "Ready"}
-          </span>
-        </div>
-        <p class="league-panel__copy">
-          ${isArchived
-            ? "All auction assignments are complete. The auction remains available as an archive and operating record for Season 1."
-            : "The auction stays available as a dedicated season panel. When active, it exposes the full live admin desk and public board."}
-        </p>
-        <div class="league-inline-stats">
-          <span class="mini-pill">${snapshot.auctionState.isLive ? "Auction running" : "Auction paused"}</span>
-          <span class="mini-pill">${snapshot.auctionState.currentBid ? `${formatPoints(snapshot.auctionState.currentBid)} on desk` : "Base price ready"}</span>
-          <span class="mini-pill">${snapshot.meta.squadSize} slots per team</span>
-        </div>
-        <a class="button" href="${buildSeasonPath("auction")}" data-route-link="auction">
-          ${isArchived ? "Open Auction Archive" : "Go To Auction"}
-        </a>
-      </article>
-
-      <article class="league-panel">
-        <div class="league-panel__header">
-          <div>
-            <p class="eyebrow">Recent Activity</p>
-            <h2>Latest Sales</h2>
-          </div>
-        </div>
-        ${
-          recentSales.length
-            ? `<div class="league-feed">
-                ${recentSales
-                  .map((sale) => {
-                    const player = snapshot.players.find((entry) => entry.id === sale.playerId);
-                    const team = snapshot.teams.find((entry) => entry.id === sale.teamId);
-                    return `
-                      <article class="league-feed__item">
-                        <strong>${player?.name ?? "-"}</strong>
-                        <p>${team?.name ?? "-"} · ${formatPoints(sale.amount)}</p>
-                      </article>
-                    `;
-                  })
-                  .join("")}
-              </div>`
-            : `<div class="league-empty">
-                No live sales yet. Once bidding starts, completed auction picks will show here.
-              </div>`
-        }
-      </article>
-    </section>
-
-    <section class="league-section">
-      <div class="league-section__header">
-        <div>
-          <p class="eyebrow">Fixtures</p>
-          <h2>Season 1 Match Schedule</h2>
-        </div>
-        <span class="mini-pill">${SEASON_FIXTURES.length} matchdays</span>
-      </div>
-      <div class="fixture-grid">
-        ${renderFixtureCards()}
-      </div>
-    </section>
-
+    <!-- 5: Sponsors bar first — top-of-fold exposure -->
     <section class="home-sponsors">
       <div class="home-sponsors__group">
         <span class="home-sponsors__label">Title Sponsor</span>
         <div class="home-sponsors__logos">
-          <img src="/assets/sponsors/01_LFBC.png" alt="Live Free By Choice" />
+          <a href="https://www.instagram.com/lfbc_fitness?igsh=MWMxOTJlbzhxOTJ3aA==" target="_blank" rel="noopener noreferrer">
+            <img src="/assets/sponsors/01_LFBC.png" alt="Live Free By Choice" />
+          </a>
         </div>
       </div>
       <div class="home-sponsors__divider" aria-hidden="true"></div>
       <div class="home-sponsors__group">
         <span class="home-sponsors__label">Premier Partners</span>
         <div class="home-sponsors__logos">
-          <img src="/assets/sponsors/04_OKA.png" alt="OKA Resorts" />
-          <img src="/assets/sponsors/03_AMI.png" alt="Amitha Developers" />
-          <img src="/assets/sponsors/07_MM.png" alt="MM Fitness Zone" />
+          <a href="https://www.instagram.com/okaresorts?igsh=cmF1cG83OGxhMWUw" target="_blank" rel="noopener noreferrer">
+            <img src="/assets/sponsors/04_OKA.png" alt="OKA Resorts" />
+          </a>
+          <a href="https://amitha-developers.ueniweb.com/" target="_blank" rel="noopener noreferrer">
+            <img src="/assets/sponsors/03_AMI.png" alt="Amitha Developers" />
+          </a>
+          <a href="https://www.google.com/search?kgmid=/g/11wtzwp6vz&q=MM@FITNESS+ZONE" target="_blank" rel="noopener noreferrer">
+            <img src="/assets/sponsors/07_MM.png" alt="MM Fitness Zone" />
+          </a>
         </div>
+      </div>
+    </section>
+
+    <!-- 1: Cinematic hero — centered badge, dramatic gradient backdrop -->
+    <section class="season-hero season-hero--cinema">
+      <div class="season-hero__glow season-hero__glow--left"></div>
+      <div class="season-hero__glow season-hero__glow--right"></div>
+      <div class="season-hero__inner">
+        <img class="season-hero__badge" src="${snapshot.league.logoPath}" alt="${snapshot.league.name}" />
+        <p class="season-hero__eyebrow">Equality Premier League</p>
+        <h1 class="season-hero__title">Season ${SEASON_NUMBER}</h1>
+        <p class="season-hero__tagline">Live Free. Play Equal.</p>
+        <div class="season-hero__actions">
+          <a class="button" href="${buildSeasonPath("squads")}" data-route-link="squads">View Squads</a>
+          <a class="button button--ghost" href="${buildSeasonPath("teams")}" data-route-link="teams">Browse Teams</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2: Stat rail — large gold numbers, thin dividers -->
+    <section class="stat-rail">
+      <div class="stat-rail__item">
+        <strong>${snapshot.teams.length}</strong>
+        <span>Franchises</span>
+        <small>Season ${SEASON_NUMBER} teams</small>
+      </div>
+      <div class="stat-rail__sep"></div>
+      <div class="stat-rail__item">
+        <strong>${snapshot.meta.totalPlayers}</strong>
+        <span>Players</span>
+        <small>${snapshot.meta.lockedPlayerCount} locked · ${snapshot.meta.liveAuctionPlayerCount} auctioned</small>
+      </div>
+      <div class="stat-rail__sep"></div>
+      <div class="stat-rail__item">
+        <strong>${completionPct}%</strong>
+        <span>Auction Complete</span>
+        <small>${soldCount} sold · ${lockedCount} owner-locked</small>
+      </div>
+      <div class="stat-rail__sep"></div>
+      <div class="stat-rail__item">
+        <strong>${SEASON_FIXTURES.reduce((acc, d) => acc + d.matches.length, 0)}</strong>
+        <span>Fixtures</span>
+        <small>${SEASON_FIXTURES.length} matchdays scheduled</small>
+      </div>
+    </section>
+
+    <!-- 3: Fixtures with team crests -->
+    <section class="league-section">
+      <div class="league-section__header">
+        <div>
+          <p class="eyebrow">Fixtures</p>
+          <h2>Season ${SEASON_NUMBER} Match Schedule</h2>
+        </div>
+        <span class="mini-pill">${SEASON_FIXTURES.length} matchdays</span>
+      </div>
+      <div class="fixture-grid">
+        ${renderFixtureCards()}
       </div>
     </section>
   `;
