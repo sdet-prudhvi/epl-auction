@@ -184,16 +184,8 @@ function parseRoute(pathname = window.location.pathname) {
     return { name: "teams", path: cleanPath };
   }
 
-  if (cleanPath === buildSeasonPath("squads")) {
-    return { name: "squads", path: cleanPath };
-  }
-
-  if (cleanPath.startsWith(`${buildSeasonPath("squads")}/`)) {
-    return {
-      name: "squad-detail",
-      teamSlug: cleanPath.replace(`${buildSeasonPath("squads")}/`, ""),
-      path: cleanPath,
-    };
+  if (cleanPath === buildSeasonPath("squads") || cleanPath.startsWith(`${buildSeasonPath("squads")}/`)) {
+    return { name: "teams", path: buildSeasonPath("teams") };
   }
 
   if (cleanPath === buildSeasonPath("points-table")) {
@@ -210,8 +202,6 @@ function parseRoute(pathname = window.location.pathname) {
 const ROUTE_TITLES = {
   home: "Equality Premier League | Season 1",
   teams: "Teams | EPL Season 1",
-  squads: "Squads | EPL Season 1",
-  "squad-detail": "Squad | EPL Season 1",
   "points-table": "Points Table | EPL Season 1",
   auction: "Auction | EPL Season 1",
   "not-found": "Page Not Found | EPL Season 1",
@@ -1405,7 +1395,7 @@ function renderNavigation() {
 
   routeLinks.forEach((link) => {
     const routeName = link.dataset.routeLink || "home";
-    const isActive = routeName === uiState.route.name || (routeName === "squads" && uiState.route.name === "squad-detail");
+    const isActive = routeName === uiState.route.name;
     link.classList.toggle("league-nav__link--active", isActive);
   });
 }
@@ -1572,112 +1562,65 @@ function renderTeamsDirectory() {
     <section class="league-section">
       <div class="league-section__header">
         <div>
-          <p class="eyebrow">Franchise Directory</p>
-          <h2>Season ${SEASON_NUMBER} Teams</h2>
+          <p class="eyebrow">Franchise Directory · Season ${SEASON_NUMBER}</p>
+          <h2>Teams &amp; Squads</h2>
         </div>
+        <span class="mini-pill">${snapshot.teams.length} franchises · ${snapshot.meta.squadSize} slots each</span>
       </div>
-      <div class="franchise-grid">
+      <div class="teams-squads-grid">
         ${snapshot.teams
           .map((team, index) => {
-            const squadCount = snapshot.players.filter((player) => player.soldToTeamId === team.id).length;
+            const accentColor = Object.values(TEAM_COLORS)[index] ?? "rgba(255,255,255,0.2)";
+            const totalSpend = snapshot.players
+              .filter((p) => p.soldToTeamId === team.id && p.soldAmount)
+              .reduce((sum, p) => sum + p.soldAmount, 0);
             return `
-              <article class="franchise-card franchise-card--${index + 1}">
-                <img class="franchise-card__logo" src="${team.logoPath}" alt="${team.name}" />
-                <span class="franchise-card__code">${team.code}</span>
-                <h3>${team.name}</h3>
-                <p>${team.owner}</p>
-                <div class="franchise-card__stats">
-                  <span>${formatPoints(team.purseRemaining)} purse left</span>
-                  <span>${squadCount}/${snapshot.meta.squadSize} players assigned</span>
+              <article class="team-squad-card" style="--team-accent:${accentColor};">
+                <div class="team-squad-card__header">
+                  <img class="team-squad-card__logo" src="${team.logoPath}" alt="${team.name}" />
+                  <div class="team-squad-card__meta">
+                    <span class="team-squad-card__code">${team.code}</span>
+                    <h3>${team.name}</h3>
+                    <p>${team.owner}</p>
+                    <div class="team-squad-card__pills">
+                      <span class="mini-pill">${formatPoints(team.purseRemaining)} purse left</span>
+                      <span class="mini-pill">${team.filledSlots}/${snapshot.meta.squadSize} filled</span>
+                      ${totalSpend ? `<span class="mini-pill">Spent ${formatPoints(totalSpend)}</span>` : ""}
+                    </div>
+                  </div>
                 </div>
-                <div class="franchise-card__actions">
-                  <a class="button" href="${buildSeasonPath("squads", getTeamSlug(team))}" data-route-link="squads">View Squad</a>
-                  <a class="button button--ghost" href="${buildSeasonPath("auction")}" data-route-link="auction">Open Auction</a>
+                <div class="team-squad-card__roster">
+                  ${snapshot.slots
+                    .map((slot) => {
+                      const player = getTeamSlotPlayer(team.id, slot.slotNumber);
+                      const isLocked = player?.status === "Locked";
+                      return `
+                        <div class="squad-row ${player ? "squad-row--filled" : "squad-row--empty"}">
+                          <span class="squad-row__num">${slot.slotNumber}</span>
+                          ${player?.photoPath
+                            ? `<img class="squad-row__photo" src="${player.photoPath}" alt="${player.name}" />`
+                            : `<span class="squad-row__photo squad-row__photo--blank"></span>`
+                          }
+                          <div class="squad-row__info">
+                            <strong>${player ? player.name : "Open"}</strong>
+                            <span>${slot.role}</span>
+                          </div>
+                          <div class="squad-row__price">
+                            ${isLocked
+                              ? `<span class="squad-row__tag squad-row__tag--locked">Owner</span>`
+                              : player?.soldAmount
+                                ? `<span class="money-gold">${formatPoints(player.soldAmount)}</span>`
+                                : `<span class="squad-row__tag squad-row__tag--open">—</span>`
+                            }
+                          </div>
+                        </div>
+                      `;
+                    })
+                    .join("")}
                 </div>
               </article>
             `;
           })
-          .join("")}
-      </div>
-    </section>
-  `;
-}
-
-function renderSquadsPage(teamSlug = null) {
-  const focusedTeam = teamSlug ? getTeamBySlug(teamSlug) : null;
-
-  if (teamSlug && !focusedTeam) {
-    seasonPage.innerHTML = `
-      <section class="league-section">
-        <div class="league-empty">The requested squad page does not exist for Season ${SEASON_NUMBER}.</div>
-      </section>
-    `;
-    return;
-  }
-
-  if (focusedTeam) {
-    seasonPage.innerHTML = `
-      <section class="league-section">
-        <div class="league-section__header">
-          <div>
-            <p class="eyebrow">Team Squad</p>
-            <h2>${focusedTeam.name}</h2>
-          </div>
-          <a class="button button--ghost" href="${buildSeasonPath("squads")}" data-route-link="squads">All Squads</a>
-        </div>
-        <div class="squad-detail-hero">
-          <img class="squad-detail-hero__logo" src="${focusedTeam.logoPath}" alt="${focusedTeam.name}" />
-          <div>
-            <p class="squad-detail-hero__meta">${focusedTeam.code} · Season ${SEASON_NUMBER}</p>
-            <h3>${focusedTeam.name}</h3>
-            <p>${focusedTeam.owner}</p>
-            <div class="league-inline-stats">
-              <span class="mini-pill">${formatPoints(focusedTeam.purseRemaining)} purse remaining</span>
-              <span class="mini-pill">${focusedTeam.filledSlots}/${snapshot.meta.squadSize} slots filled</span>
-            </div>
-          </div>
-        </div>
-        <div class="squad-detail-grid">
-          ${snapshot.slots
-            .map((slot) => {
-              const player = getTeamSlotPlayer(focusedTeam.id, slot.slotNumber);
-              return `
-                <article class="slot-detail-card">
-                  <span>${slot.label}</span>
-                  <strong>${player ? player.name : "Open"}</strong>
-                  <p>${player ? player.roleLabel : slot.role}</p>
-                </article>
-              `;
-            })
-            .join("")}
-        </div>
-      </section>
-    `;
-    return;
-  }
-
-  seasonPage.innerHTML = `
-    <section class="league-section">
-      <div class="league-section__header">
-        <div>
-          <p class="eyebrow">Squad Centre</p>
-          <h2>Team Squads</h2>
-        </div>
-      </div>
-      <div class="squad-directory">
-        ${snapshot.teams
-          .map(
-            (team, index) => `
-              <article class="squad-directory__card squad-directory__card--${index + 1}">
-                <img class="squad-directory__logo" src="${team.logoPath}" alt="${team.name}" />
-                <div>
-                  <h3>${team.name}</h3>
-                  <p>${team.filledSlots}/${snapshot.meta.squadSize} slots currently filled</p>
-                </div>
-                <a class="button" href="${buildSeasonPath("squads", getTeamSlug(team))}" data-route-link="squads">Open Squad Page</a>
-              </article>
-            `
-          )
           .join("")}
       </div>
     </section>
@@ -1777,12 +1720,6 @@ function renderSeasonPage() {
   switch (uiState.route.name) {
     case "teams":
       renderTeamsDirectory();
-      break;
-    case "squads":
-      renderSquadsPage();
-      break;
-    case "squad-detail":
-      renderSquadsPage(uiState.route.teamSlug);
       break;
     case "points-table":
       renderPointsTablePage();

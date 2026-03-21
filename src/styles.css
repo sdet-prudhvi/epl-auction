@@ -3588,6 +3588,190 @@ select {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
+/* ── Teams + Squads combined page ── */
+.teams-squads-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.team-squad-card {
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 3px solid var(--team-accent, rgba(255,255,255,0.2));
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.team-squad-card__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 20px 18px;
+  gap: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.team-squad-card__logo {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+}
+
+.team-squad-card__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.team-squad-card__code {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--team-accent);
+  background: color-mix(in srgb, var(--team-accent) 12%, transparent);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.team-squad-card__meta h3 {
+  margin: 6px 0 0;
+  font-family: "Oswald", sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.team-squad-card__meta p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.team-squad-card__pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.team-squad-card__roster {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Squad rows */
+.squad-row {
+  display: grid;
+  grid-template-columns: 22px 32px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 120ms ease;
+}
+
+.squad-row:last-child {
+  border-bottom: none;
+}
+
+.squad-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.squad-row--empty {
+  opacity: 0.44;
+}
+
+.squad-row__num {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.squad-row__photo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.squad-row__photo--blank {
+  display: block;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+}
+
+.squad-row__info {
+  min-width: 0;
+}
+
+.squad-row__info strong {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.squad-row__info span {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.squad-row__price {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.squad-row__tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.squad-row__tag--locked {
+  background: rgba(247, 191, 79, 0.14);
+  color: var(--gold);
+}
+
+.squad-row__tag--open {
+  color: var(--ink-soft);
+}
+
+@media (max-width: 1200px) {
+  .teams-squads-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .teams-squads-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .franchise-card {
   text-align: center;
 }
