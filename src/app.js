@@ -1693,17 +1693,63 @@ function renderPointsTablePage() {
   `;
 }
 
+function renderAuctionLockedScreen() {
+  seasonPage.innerHTML = `
+    <section class="auction-concluded">
+      <div class="auction-concluded__card">
+        <div class="auction-concluded__glow" aria-hidden="true"></div>
+        <div class="auction-concluded__trophy" aria-hidden="true">
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="trophyGrad" x1="0" y1="0" x2="0.6" y2="1">
+                <stop offset="0%" stop-color="#ffe47a"/>
+                <stop offset="100%" stop-color="#c48a10"/>
+              </linearGradient>
+            </defs>
+            <path d="M22 12 H58 L54 46 Q40 55 26 46 Z" fill="url(#trophyGrad)"/>
+            <path d="M22 20 Q10 20 10 32 Q10 44 22 40" stroke="url(#trophyGrad)" stroke-width="4" stroke-linecap="round"/>
+            <path d="M58 20 Q70 20 70 32 Q70 44 58 40" stroke="url(#trophyGrad)" stroke-width="4" stroke-linecap="round"/>
+            <rect x="36" y="55" width="8" height="8" fill="url(#trophyGrad)"/>
+            <rect x="24" y="62" width="32" height="7" rx="3.5" fill="url(#trophyGrad)"/>
+          </svg>
+        </div>
+        <p class="auction-concluded__league">Equality Premier League · Season 1</p>
+        <h1 class="auction-concluded__headline">Auction Complete</h1>
+        <p class="auction-concluded__body">
+          The Season 1 player auction has concluded. All four squads have been
+          finalised and the teams are ready to take the field.
+        </p>
+        <div class="auction-concluded__actions">
+          <a href="${buildSeasonPath("teams")}" class="button button--gold" data-route-link="teams">View Squads</a>
+          <button class="button button--ghost" id="auction-admin-login">Admin Login</button>
+        </div>
+      </div>
+    </section>
+  `;
+  document.getElementById("auction-admin-login")?.addEventListener("click", showLoginOverlay);
+}
+
 function renderSeasonPage() {
   if (!uiState.route || !seasonPage || !auctionShell) {
     return;
   }
 
   const isAuctionRoute = uiState.route.name === "auction";
-  auctionShell.classList.toggle("auction-shell--hidden", !isAuctionRoute);
-  seasonPage.classList.toggle("season-page--hidden", isAuctionRoute);
+  const isAdmin = uiState.currentView === "admin";
+  const isPublicAuction = isAuctionRoute && !isAdmin;
+  const showAuctionShell = isAuctionRoute && isAdmin;
+
+  auctionShell.classList.toggle("auction-shell--hidden", !showAuctionShell);
+  seasonPage.classList.toggle("season-page--hidden", showAuctionShell);
+
+  // Public user on auction route — show locked screen immediately (no snapshot needed)
+  if (isPublicAuction) {
+    renderAuctionLockedScreen();
+    return;
+  }
 
   if (!snapshot) {
-    if (!isAuctionRoute) {
+    if (!showAuctionShell) {
       seasonPage.innerHTML = `
         <section class="league-section">
           <div class="league-empty">Loading Season ${SEASON_NUMBER} league data…</div>
@@ -1713,7 +1759,7 @@ function renderSeasonPage() {
     return;
   }
 
-  if (isAuctionRoute) {
+  if (showAuctionShell) {
     seasonPage.innerHTML = "";
     return;
   }
