@@ -1471,50 +1471,33 @@ function renderHomePage() {
   const { soldCount, lockedCount, completionPct } = getAuctionSummary();
 
   seasonPage.innerHTML = `
-    <!-- 5: Sponsors bar first — top-of-fold exposure -->
-    <section class="home-sponsors">
-      <div class="home-sponsors__group">
-        <span class="home-sponsors__label">Title Sponsor</span>
-        <div class="home-sponsors__logos">
-          <a href="https://www.instagram.com/lfbc_fitness?igsh=MWMxOTJlbzhxOTJ3aA==" target="_blank" rel="noopener noreferrer">
-            <img src="/assets/sponsors/01_LFBC.png" alt="Live Free By Choice" />
-          </a>
+    <!-- 5: Sponsors marquee — top-of-fold exposure -->
+    <div class="home-sponsor-ribbon">
+      <span class="home-sponsor-ribbon__label">⚡ Powered By</span>
+      <div class="home-sponsor-ribbon__window">
+        <div class="home-sponsor-ribbon__track">
+          <a href="https://www.instagram.com/lfbc_fitness?igsh=MWMxOTJlbzhxOTJ3aA==" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge"><img src="/assets/sponsors/01_LFBC.png" alt="Live Free By Choice" loading="lazy" /></a>
+          <span class="home-sponsor-badge"><img src="/assets/sponsors/02_ANU.png" alt="Anu Beauty Clinic" loading="lazy" /></span>
+          <a href="https://amitha-developers.ueniweb.com/" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge"><img src="/assets/sponsors/03_AMI.png" alt="Amitha Developers" loading="lazy" /></a>
+          <a href="https://www.instagram.com/okaresorts?igsh=cmF1cG83OGxhMWUw" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge"><img src="/assets/sponsors/04_OKA.png" alt="OKA Resorts" loading="lazy" /></a>
+          <a href="https://site.dgtechsoln.com/bot-9-amp-gaming-park/" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge"><img src="/assets/sponsors/05_BOT.png" alt="BOT9" loading="lazy" /></a>
+          <a href="https://share.google/NX40m8bszZ4qvcS3v" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge"><img src="/assets/sponsors/06_SMILE.png" alt="Smile Care" loading="lazy" /></a>
+          <a href="https://www.google.com/search?kgmid=/g/11wtzwp6vz&q=MM@FITNESS+ZONE" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge"><img src="/assets/sponsors/07_MM.png" alt="MM Fitness Zone" loading="lazy" /></a>
+          <span class="home-sponsor-badge"><img src="/assets/sponsors/08_KSKA.png" alt="KSKA" loading="lazy" /></span>
+          <span class="home-sponsor-badge"><img src="/assets/sponsors/09_MHMC.png" alt="My Health My Care" loading="lazy" /></span>
+          <!-- Duplicate set for seamless infinite loop -->
+          <a href="https://www.instagram.com/lfbc_fitness?igsh=MWMxOTJlbzhxOTJ3aA==" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge" aria-hidden="true" tabindex="-1"><img src="/assets/sponsors/01_LFBC.png" alt="" /></a>
+          <span class="home-sponsor-badge" aria-hidden="true"><img src="/assets/sponsors/02_ANU.png" alt="" /></span>
+          <a href="https://amitha-developers.ueniweb.com/" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge" aria-hidden="true" tabindex="-1"><img src="/assets/sponsors/03_AMI.png" alt="" /></a>
+          <a href="https://www.instagram.com/okaresorts?igsh=cmF1cG83OGxhMWUw" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge" aria-hidden="true" tabindex="-1"><img src="/assets/sponsors/04_OKA.png" alt="" /></a>
+          <a href="https://site.dgtechsoln.com/bot-9-amp-gaming-park/" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge" aria-hidden="true" tabindex="-1"><img src="/assets/sponsors/05_BOT.png" alt="" /></a>
+          <a href="https://share.google/NX40m8bszZ4qvcS3v" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge" aria-hidden="true" tabindex="-1"><img src="/assets/sponsors/06_SMILE.png" alt="" /></a>
+          <a href="https://www.google.com/search?kgmid=/g/11wtzwp6vz&q=MM@FITNESS+ZONE" target="_blank" rel="noopener noreferrer" class="home-sponsor-badge" aria-hidden="true" tabindex="-1"><img src="/assets/sponsors/07_MM.png" alt="" /></a>
+          <span class="home-sponsor-badge" aria-hidden="true"><img src="/assets/sponsors/08_KSKA.png" alt="" /></span>
+          <span class="home-sponsor-badge" aria-hidden="true"><img src="/assets/sponsors/09_MHMC.png" alt="" /></span>
         </div>
       </div>
-      <div class="home-sponsors__divider" aria-hidden="true"></div>
-      <div class="home-sponsors__group">
-        <span class="home-sponsors__label">Premier Partners</span>
-        <div class="home-sponsors__logos">
-          <a href="https://www.instagram.com/okaresorts?igsh=cmF1cG83OGxhMWUw" target="_blank" rel="noopener noreferrer">
-            <img src="/assets/sponsors/04_OKA.png" alt="OKA Resorts" />
-          </a>
-          <a href="https://amitha-developers.ueniweb.com/" target="_blank" rel="noopener noreferrer">
-            <img src="/assets/sponsors/03_AMI.png" alt="Amitha Developers" />
-          </a>
-          <a href="https://www.google.com/search?kgmid=/g/11wtzwp6vz&q=MM@FITNESS+ZONE" target="_blank" rel="noopener noreferrer">
-            <img src="/assets/sponsors/07_MM.png" alt="MM Fitness Zone" />
-          </a>
-        </div>
-      </div>
-      <div class="home-sponsors__divider" aria-hidden="true"></div>
-      <div class="home-sponsors__group">
-        <span class="home-sponsors__label">Umpire Partner</span>
-        <div class="home-sponsors__logos">
-          <a href="https://site.dgtechsoln.com/bot-9-amp-gaming-park/" target="_blank" rel="noopener noreferrer">
-            <img src="/assets/sponsors/05_BOT.png" alt="BOT9" />
-          </a>
-        </div>
-      </div>
-      <div class="home-sponsors__divider" aria-hidden="true"></div>
-      <div class="home-sponsors__group">
-        <span class="home-sponsors__label">Strategic Timeout Partner</span>
-        <div class="home-sponsors__logos">
-          <a href="https://share.google/NX40m8bszZ4qvcS3v" target="_blank" rel="noopener noreferrer">
-            <img src="/assets/sponsors/06_SMILE.png" alt="Smile Care" />
-          </a>
-        </div>
-      </div>
-    </section>
+    </div>
 
     <!-- 1: Cinematic hero — centered badge, dramatic gradient backdrop -->
     <section class="season-hero season-hero--cinema">
