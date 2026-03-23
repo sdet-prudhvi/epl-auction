@@ -152,8 +152,12 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "GET" && pathname === "/api/state") {
-    const state = await getState();
-    sendJson(res, 200, { ok: true, state });
+    try {
+      const state = await getState();
+      sendJson(res, 200, { ok: true, state });
+    } catch (error) {
+      sendJson(res, 500, { ok: false, message: error instanceof Error ? error.message : "Failed to load state." });
+    }
     return;
   }
 
@@ -166,7 +170,11 @@ const server = http.createServer(async (req, res) => {
     res.write("\n");
     eventClients.add(res);
     sendEvent(res, "connected", { ok: true });
-    sendEvent(res, "state", { state: await getState() });
+    try {
+      sendEvent(res, "state", { state: await getState() });
+    } catch (error) {
+      sendEvent(res, "error", { message: error instanceof Error ? error.message : "Failed to load state." });
+    }
 
     req.on("close", () => {
       eventClients.delete(res);
