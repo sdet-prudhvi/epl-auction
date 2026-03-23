@@ -2,7 +2,6 @@ services:
   - type: web
     name: epl-auction
     runtime: node
-    plan: starter
     buildCommand: npm install --omit=dev
     startCommand: npm start
     healthCheckPath: /healthz
