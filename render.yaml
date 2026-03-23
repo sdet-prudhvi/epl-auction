@@ -3,7 +3,7 @@ services:
     name: epl-auction
     runtime: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install --omit=dev
     startCommand: npm start
     healthCheckPath: /healthz
     autoDeploy: true
