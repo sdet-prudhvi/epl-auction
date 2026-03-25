@@ -130,7 +130,7 @@ const adminView = document.querySelector("#admin-view");
 const publicView = document.querySelector("#public-view");
 const adminActions = document.querySelector("#admin-actions");
 const viewButtons = document.querySelectorAll("[data-view]");
-const routeLinks = document.querySelectorAll(".league-nav [data-route-link]");
+const routeLinks = document.querySelectorAll(".league-nav__link[data-route-link]");
 
 const toggleLiveButton = document.querySelector("#toggle-live");
 const prevSlotButton = document.querySelector("#prev-slot");
@@ -1599,7 +1599,7 @@ function renderTeamsDirectory() {
                         <div class="squad-row ${player ? "squad-row--filled" : "squad-row--empty"}">
                           <span class="squad-row__num">${slot.slotNumber}</span>
                           ${player?.photoPath
-                            ? `<img class="squad-row__photo" src="${player.photoPath}" alt="${player.name}" />`
+                            ? `<img class="squad-row__photo squad-row__photo--clickable" src="${player.photoPath}" alt="${player.name}" data-player-id="${player.id}" data-team-id="${team.id}" />`
                             : `<span class="squad-row__photo squad-row__photo--blank"></span>`
                           }
                           <div class="squad-row__info">
@@ -1735,14 +1735,16 @@ function renderSeasonPage() {
   }
 
   const isAuctionRoute = uiState.route.name === "auction";
-  const isAdmin = uiState.currentView === "admin";
-  const isPublicAuction = isAuctionRoute && !isAdmin;
-  const showAuctionShell = isAuctionRoute && isAdmin;
+  // Shell visibility is based on session token, NOT the currently-selected view tab.
+  // This prevents switching to "Public Board" from hiding the auction shell.
+  const isLoggedIn = Boolean(uiState.token);
+  const isPublicAuction = isAuctionRoute && !isLoggedIn;
+  const showAuctionShell = isAuctionRoute && isLoggedIn;
 
   auctionShell.classList.toggle("auction-shell--hidden", !showAuctionShell);
   seasonPage.classList.toggle("season-page--hidden", showAuctionShell);
 
-  // Public user on auction route — show locked screen immediately (no snapshot needed)
+  // Unauthenticated user on auction route — show locked screen
   if (isPublicAuction) {
     renderAuctionLockedScreen();
     return;
@@ -2029,6 +2031,123 @@ window.addEventListener("beforeunload", () => {
   if (eventSource) {
     eventSource.close();
   }
+});
+
+// ── Player profile modal ──────────────────────────────────────
+function openPlayerModal(playerId, teamId) {
+  const player = snapshot?.players.find((p) => p.id === playerId);
+  const team = snapshot?.teams.find((t) => t.id === teamId);
+  if (!player || !team) return;
+
+  const tc = TEAM_COLORS[team.name] ?? "rgba(255,255,255,0.2)";
+  const isLocked = player.status === "Locked";
+  const soldPrice = player.soldAmount ? formatPoints(player.soldAmount) : null;
+  const basePrice = player.basePrice ? formatPoints(player.basePrice) : null;
+  const slot = snapshot.slots.find((s) => s.slotNumber === player.assignedSlotNumber);
+
+  const existing = document.getElementById("player-modal-overlay");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "player-modal-overlay";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", `${player.name} profile`);
+  overlay.innerHTML = `
+    <div class="player-modal" style="--tc:${tc};">
+      <button class="player-modal__close" id="player-modal-close" type="button" aria-label="Close">&#x2715;</button>
+      <div class="player-modal__photo-col">
+        <div class="player-modal__avatar-ring">
+          <img class="player-modal__avatar" src="${player.photoPath}" alt="${player.name}" />
+        </div>
+        <div class="player-modal__team-badge">
+          <img class="player-modal__team-logo" src="${team.logoPath}" alt="${team.name}" />
+          <span class="player-modal__team-name">${team.name}</span>
+        </div>
+      </div>
+      <div class="player-modal__details">
+        <div class="player-modal__header">
+          <h2 class="player-modal__name">${player.name}</h2>
+          <span class="player-modal__role-badge">${player.roleLabel ?? "Player"}</span>
+        </div>
+        ${player.eligibilityLabel ? `<p class="player-modal__eligibility">${player.eligibilityLabel}</p>` : ""}
+        <div class="player-modal__stats">
+          ${slot ? `
+          <div class="player-modal__stat">
+            <span class="player-modal__stat-label">Slot</span>
+            <span class="player-modal__stat-value">#${player.assignedSlotNumber} · ${slot.role}</span>
+          </div>` : ""}
+          ${basePrice ? `
+          <div class="player-modal__stat">
+            <span class="player-modal__stat-label">Base Price</span>
+            <span class="player-modal__stat-value">${basePrice}</span>
+          </div>` : ""}
+          <div class="player-modal__stat">
+            <span class="player-modal__stat-label">Status</span>
+            <span class="player-modal__stat-value player-modal__stat-value--status ${isLocked ? "is-locked" : "is-sold"}">
+              ${isLocked ? "Owner / Locked" : "Sold"}
+            </span>
+          </div>
+          ${soldPrice && !isLocked ? `
+          <div class="player-modal__stat player-modal__stat--highlight">
+            <span class="player-modal__stat-label">Sold For</span>
+            <span class="player-modal__stat-value money-gold">${soldPrice}</span>
+          </div>` : ""}
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.style.overflow = "hidden";
+
+  overlay.querySelector("#player-modal-close").addEventListener("click", closePlayerModal);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closePlayerModal();
+  });
+}
+
+function closePlayerModal() {
+  const overlay = document.getElementById("player-modal-overlay");
+  if (overlay) {
+    overlay.remove();
+    document.body.style.overflow = "";
+  }
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closePlayerModal();
+});
+
+seasonPage?.addEventListener("click", (e) => {
+  const photo = e.target.closest(".squad-row__photo--clickable");
+  if (!photo) return;
+  const playerId = photo.dataset.playerId;
+  const teamId = photo.dataset.teamId;
+  if (playerId && teamId) openPlayerModal(playerId, teamId);
+});
+
+// ── Hamburger nav toggle ──────────────────────────────────────
+const navHamburger = document.getElementById("nav-hamburger");
+const leagueNav = document.querySelector(".league-nav");
+
+function closeNav() {
+  leagueNav?.classList.remove("league-nav--open");
+  navHamburger?.setAttribute("aria-expanded", "false");
+}
+
+navHamburger?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  const isOpen = leagueNav?.classList.toggle("league-nav--open");
+  navHamburger.setAttribute("aria-expanded", String(isOpen));
+});
+
+document.getElementById("nav-links")?.addEventListener("click", (e) => {
+  if (e.target.closest("[data-route-link]")) closeNav();
+});
+
+document.addEventListener("click", (e) => {
+  if (leagueNav && !leagueNav.contains(e.target)) closeNav();
 });
 
 uiState.route = parseRoute(window.location.pathname);

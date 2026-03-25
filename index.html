@@ -53,6 +53,7 @@
         padding: 10px 12px;
         font-size: 1rem;
         font-family: inherit;
+        min-height: 44px;
       }
       .login-modal input:focus {
         outline: none;
@@ -73,13 +74,18 @@
             <img class="league-nav__logo" id="nav-logo" src="/assets/branding/epl-logo.png" alt="EPL" />
             <span>EPL</span>
           </a>
-          <div class="league-nav__links">
+          <div class="league-nav__links" id="nav-links">
             <a class="league-nav__link" href="/season/1" data-route-link="home">Home</a>
             <a class="league-nav__link" href="/season/1/teams" data-route-link="teams">Teams</a>
             <a class="league-nav__link" href="/season/1/points-table" data-route-link="points-table">Points Table</a>
             <a class="league-nav__link" href="/season/1/auction" data-route-link="auction">Auction</a>
           </div>
           <span class="league-nav__season">Season 1</span>
+          <button class="league-nav__hamburger" id="nav-hamburger" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="nav-links">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </button>
         </div>
       </nav>
 

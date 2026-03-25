@@ -1418,6 +1418,7 @@ select {
 
 .roster-table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -2988,18 +2989,7 @@ select {
   }
 }
 
-@media (max-width: 680px) {
-  /* Stop sponsor animation; enable touch scroll inside topbar too */
-  .topbar__sponsors .sponsor-ribbon__track {
-    animation: none;
-  }
-
-  .topbar__sponsors .sponsor-ribbon__window {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    mask-image: linear-gradient(to right, black 80%, transparent 100%);
-  }
-}
+/* Topbar sponsor ribbon at ≤680px handled by .sponsor-ribbon__window block above */
 
 @media (max-width: 480px) {
   .teams-grid--public {
@@ -3976,7 +3966,7 @@ select {
   opacity: 1;
 }
 
-@media (max-width: 680px) {
+@media (max-width: 600px) {
   .home-sponsor-ribbon {
     grid-template-columns: 1fr;
     gap: 14px;
@@ -4121,5 +4111,424 @@ select {
   .league-nav__link {
     padding: 7px 10px;
     font-size: 0.8rem;
+  }
+
+  /* P2.2 Topbar compact */
+  .topbar__brand h1 {
+    font-size: 1.3rem;
+  }
+
+  .topbar__eyebrow {
+    font-size: 0.72rem;
+  }
+
+  .topbar__tag {
+    font-size: 0.72rem;
+    padding: 4px 8px;
+  }
+
+  /* P2.5 Teams card grid 2-col (was 4-col, already covered at 960px) */
+  .league-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE PHASE 4 — Hamburger nav + P1–P3 remaining fixes
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── P1.1 Hamburger button base (hidden on desktop) ── */
+.league-nav__hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background 150ms ease;
+}
+
+.league-nav__hamburger:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.league-nav__hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 2px;
+  transition: transform 200ms ease, opacity 200ms ease;
+  pointer-events: none;
+}
+
+.league-nav--open .league-nav__hamburger span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.league-nav--open .league-nav__hamburger span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.league-nav--open .league-nav__hamburger span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── P1.1 Mobile nav drawer at ≤600px ── */
+@media (max-width: 600px) {
+  .league-nav__hamburger {
+    display: flex;
+  }
+
+  /* Elevate the whole nav above archive-banner and page content */
+  .league-nav {
+    position: relative;
+    z-index: 200;
+  }
+
+  .league-nav__inner {
+    position: relative;
+  }
+
+  .league-nav__links {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+    background: rgba(8, 16, 30, 0.98);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 16px;
+    backdrop-filter: blur(20px);
+    z-index: 201;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  }
+
+  .league-nav--open .league-nav__links {
+    display: flex;
+  }
+
+  .league-nav__link {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .league-nav__link--active {
+    color: var(--gold);
+    background: rgba(247, 191, 79, 0.1);
+  }
+}
+
+/* ── P1.2 Points table (standings) — smaller min-width at ≤680px ── */
+@media (max-width: 680px) {
+  .league-section .roster-table {
+    min-width: 420px;
+  }
+}
+
+/* ── P1.5 Stage card — keep vertical at ≤480px (override earlier revert) ── */
+@media (max-width: 480px) {
+  .stage-card--player {
+    grid-template-columns: 1fr;
+    align-items: center;
+  }
+
+  .stage-card__photo {
+    width: 100%;
+    max-width: 160px;
+    height: 180px;
+    margin: 0 auto;
+  }
+}
+
+/* ── P2.1 Squad row photo — 44px tap target on mobile ── */
+@media (max-width: 680px) {
+  .squad-row {
+    grid-template-columns: 22px 44px 1fr auto;
+    gap: 12px;
+  }
+
+  .squad-row__photo {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ── P2.3 Hero action buttons — column stack at ≤480px ── */
+@media (max-width: 480px) {
+  .season-hero--cinema .season-hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .season-hero--cinema .season-hero__actions .button {
+    text-align: center;
+    width: 100%;
+  }
+}
+
+/* ── P2.6 Font sizes — push small text up to readable size on phones ── */
+@media (max-width: 600px) {
+  .squad-row__num {
+    font-size: 0.76rem;
+  }
+
+  .squad-row__info strong {
+    font-size: 0.86rem;
+  }
+
+  .squad-row__info span {
+    font-size: 0.76rem;
+  }
+
+  .squad-row__tag {
+    font-size: 0.76rem;
+    padding: 3px 8px;
+  }
+
+  .league-card span {
+    font-size: 0.82rem;
+  }
+
+  .eyebrow {
+    font-size: 0.76rem;
+  }
+}
+
+/* ── P3.1 prefers-reduced-motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .sponsor-ribbon__track,
+  .home-sponsor-ribbon__track,
+  .ticker-track {
+    animation: none;
+  }
+
+  .league-nav__hamburger span,
+  .button,
+  .league-nav__link,
+  .home-sponsor-badge {
+    transition: none;
+  }
+}
+
+/* ── P3.2 :active tap feedback on nav links ── */
+.league-nav__link:active {
+  background: rgba(255, 255, 255, 0.13);
+  color: rgba(255, 255, 255, 0.96);
+}
+
+/* ── Player Profile Modal ───────────────────────────────────── */
+.squad-row__photo--clickable {
+  cursor: pointer;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.squad-row__photo--clickable:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+#player-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 11, 20, 0.88);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  padding: 16px;
+}
+
+.player-modal {
+  position: relative;
+  background: var(--panel-strong);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid var(--tc, var(--accent));
+  border-radius: 16px;
+  padding: 32px;
+  width: min(680px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.7);
+}
+
+.player-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 1.3rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 150ms ease, background 150ms ease;
+}
+.player-modal__close:hover {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.player-modal__photo-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.player-modal__avatar-ring {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--tc, var(--accent)), rgba(255,255,255,0.12));
+  flex-shrink: 0;
+}
+
+.player-modal__avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+.player-modal__team-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-modal__team-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.player-modal__team-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--tc, var(--accent));
+  text-align: center;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.player-modal__details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.player-modal__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.player-modal__name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.15;
+}
+
+.player-modal__role-badge {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  align-self: center;
+}
+
+.player-modal__eligibility {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.player-modal__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.player-modal__stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.player-modal__stat--highlight .player-modal__stat-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.player-modal__stat-label {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.player-modal__stat-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.player-modal__stat-value--status.is-locked {
+  color: var(--gold, #c9a227);
+}
+.player-modal__stat-value--status.is-sold {
+  color: #06d6a0;
+}
+
+/* Mobile: centered portrait layout */
+@media (max-width: 600px) {
+  .player-modal {
+    grid-template-columns: 1fr;
+    padding: 24px 20px;
+    gap: 20px;
+    border-radius: 14px;
+  }
+
+  .player-modal__avatar-ring {
+    width: 120px;
+    height: 120px;
+  }
+
+  .player-modal__name {
+    font-size: 1.35rem;
   }
 }
