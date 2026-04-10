@@ -6,9 +6,6 @@ import { loadFromDb, saveToDb } from "./db.js";
 const dataDir = path.join(process.cwd(), "data");
 const stateFile = path.join(dataDir, "auction-state.json");
 
-function clone(value) {
-  return JSON.parse(JSON.stringify(value));
-}
 
 function hydrateState(state) {
   const seed = createSeedState();
@@ -45,6 +42,7 @@ function hydrateState(state) {
       nominationOrder: seededPlayer.nominationOrder,
       roleLabel: seededPlayer.roleLabel,
       basePrice: seededPlayer.basePrice,
+      cricHeroesUrl: seededPlayer.cricHeroesUrl ?? null,
     };
   });
 

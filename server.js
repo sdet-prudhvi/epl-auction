@@ -4,6 +4,7 @@ import path from "node:path";
 import { URL } from "node:url";
 import { randomUUID } from "node:crypto";
 import { applyAction, getState, resetAuction } from "./backend/store.js";
+import { pingDb } from "./backend/db.js";
 
 // Load .env file if present (local development)
 try {
@@ -28,7 +29,6 @@ const eventClients = new Set();
 const sessions = new Set();
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "auctionpassword";
-const DEFAULT_SITE_URL = process.env.PUBLIC_BASE_URL || "https://equalitypremierleague.com";
 const SEASON_NUMBER = 1;
 const LEAGUE_NAME = "Equality Premier League";
 const LEAGUE_SHORT_NAME = "EPL";
@@ -532,3 +532,14 @@ const server = http.createServer(async (req, res) => {
 server.listen(port, host, () => {
   process.stdout.write(`EPL auction server running at http://${host}:${port}/\n`);
 });
+
+// Keep Supabase from pausing — ping every 4 minutes when DATABASE_URL is set
+if (process.env.DATABASE_URL) {
+  setInterval(async () => {
+    try {
+      await pingDb();
+    } catch {
+      // silent — main request path will surface real errors
+    }
+  }, 4 * 60 * 1000);
+}

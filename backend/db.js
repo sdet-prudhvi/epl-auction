@@ -42,4 +42,8 @@ async function saveToDb(state) {
   );
 }
 
-export { loadFromDb, saveToDb };
+async function pingDb() {
+  await getPool().query("SELECT 1");
+}
+
+export { loadFromDb, pingDb, saveToDb };

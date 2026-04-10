@@ -13,6 +13,7 @@ const uiState = {
 
 const SEASON_NUMBER = 1;
 const SEASON_BASE = `/season/${SEASON_NUMBER}`;
+const CRICHEROES_URL = "https://cricheroes.com/tournament/1956341/equality-premium-league";
 const TEAM_COLORS = {
   "GOWTHAM'S XI": "#e63946",
   "RAHUL'S XI":   "#3a86ff",
@@ -1509,8 +1510,10 @@ function renderHomePage() {
         <h1 class="season-hero__title">Season ${SEASON_NUMBER}</h1>
         <p class="season-hero__tagline">Live Free. Play Equal.</p>
         <div class="season-hero__actions">
-          <a class="button" href="${buildSeasonPath("squads")}" data-route-link="squads">View Squads</a>
-          <a class="button button--ghost" href="${buildSeasonPath("teams")}" data-route-link="teams">Browse Teams</a>
+          <a class="button" href="${buildSeasonPath("teams")}" data-route-link="teams">Browse Teams</a>
+          <a class="button button--live" href="${CRICHEROES_URL}" target="_blank" rel="noopener noreferrer">
+            <span class="live-dot" aria-hidden="true"></span>Live Scores
+          </a>
         </div>
       </div>
     </section>
@@ -1549,7 +1552,12 @@ function renderHomePage() {
           <p class="eyebrow">Fixtures</p>
           <h2>Season ${SEASON_NUMBER} Match Schedule</h2>
         </div>
-        <span class="mini-pill">${SEASON_FIXTURES.length} matchdays</span>
+        <div class="league-section__header-right">
+          <span class="mini-pill">${SEASON_FIXTURES.length} matchdays</span>
+          <a class="cricheroes-link" href="${CRICHEROES_URL}" target="_blank" rel="noopener noreferrer">
+            <span class="live-dot" aria-hidden="true"></span>Follow Live on CricHeroes
+          </a>
+        </div>
       </div>
       <div class="fixture-grid">
         ${renderFixtureCards()}
@@ -1640,7 +1648,9 @@ function renderPointsTablePage() {
       <div class="league-inline-stats">
         <span class="mini-pill">Season kicks off Apr 11</span>
         <span class="mini-pill">${SEASON_FIXTURES.length} matchdays scheduled</span>
-        <span class="mini-pill">Standings update after each matchday</span>
+        <a class="cricheroes-link" href="${CRICHEROES_URL}" target="_blank" rel="noopener noreferrer">
+          <span class="live-dot" aria-hidden="true"></span>Live Scores on CricHeroes
+        </a>
       </div>
       <div class="roster-table-wrap">
         <table class="roster-table">
@@ -1684,7 +1694,11 @@ function renderPointsTablePage() {
         </div>
       </div>
       <div class="league-empty">
-        Season 1 begins Apr 11 — standings will update live after each matchday.
+        Season 1 begins Apr 11 — standings will update after each matchday.
+        <br />
+        <a class="cricheroes-link cricheroes-link--block" href="${CRICHEROES_URL}" target="_blank" rel="noopener noreferrer">
+          <span class="live-dot" aria-hidden="true"></span>Follow live on CricHeroes →
+        </a>
       </div>
       <div class="fixture-grid">
         ${renderFixtureCards()}
@@ -2094,6 +2108,10 @@ function openPlayerModal(playerId, teamId) {
             <span class="player-modal__stat-value money-gold">${soldPrice}</span>
           </div>` : ""}
         </div>
+        ${player.cricHeroesUrl ? `
+        <a class="player-modal__cricheroes-btn" href="${player.cricHeroesUrl}" target="_blank" rel="noopener noreferrer">
+          View on CricHeroes →
+        </a>` : ""}
       </div>
     </div>
   `;

@@ -4532,3 +4532,98 @@ select {
     font-size: 1.35rem;
   }
 }
+
+/* ── CricHeroes Live Scores ─────────────────────────────────────────── */
+
+/* Pulsing live dot */
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-right: 7px;
+  flex-shrink: 0;
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.45; transform: scale(0.75); }
+}
+
+/* Hero button variant */
+.button--live {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: background 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.button--live:hover {
+  background: rgba(34, 197, 94, 0.22);
+  border-color: rgba(34, 197, 94, 0.6);
+  color: #86efac;
+}
+
+/* Inline CricHeroes link (fixture header / points table) */
+.cricheroes-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4ade80;
+  text-decoration: none;
+  padding: 5px 12px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 20px;
+  background: rgba(34, 197, 94, 0.08);
+  white-space: nowrap;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.cricheroes-link:hover {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.55);
+}
+
+/* Block variant used inside league-empty */
+.cricheroes-link--block {
+  margin-top: 14px;
+  display: inline-flex;
+}
+
+/* Right-side of section header: pill + CricHeroes link side by side */
+.league-section__header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ── Player modal — CricHeroes button ───────────────────────────────── */
+.player-modal__cricheroes-btn {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 20px;
+  padding: 10px 18px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.player-modal__cricheroes-btn:hover {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.6);
+}
